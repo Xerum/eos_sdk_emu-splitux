@@ -6,6 +6,28 @@
 #include <stdlib.h>
 #include <string.h>
 
+// LAN_HOSTADDR_ATTR is internal: hide it from the game's attribute view
+static bool attr_hidden(const SessionAttribute* attr) {
+    return strcmp(attr->key, LAN_HOSTADDR_ATTR) == 0;
+}
+
+// Map a game-visible attribute index to the index in session->attributes (-1 if none)
+static int real_attr_index(const Session* session, uint32_t visible_index) {
+    uint32_t seen = 0;
+    for (int i = 0; i < session->attribute_count; i++) {
+        if (attr_hidden(&session->attributes[i])) continue;
+        if (seen++ == visible_index) return i;
+    }
+    return -1;
+}
+
+static const char* game_host_address(const Session* session) {
+    for (int i = 0; i < session->attribute_count; i++) {
+        if (attr_hidden(&session->attributes[i])) return session->attributes[i].value.as_string;
+    }
+    return "";
+}
+
 // Helper function to convert internal Session to EOS_SessionDetails_Info
 static EOS_SessionDetails_Info* session_to_info(const Session* session) {
     if (!session || !session->valid) {
@@ -31,7 +53,10 @@ static EOS_SessionDetails_Info* session_to_info(const Session* session) {
     // EOS_Sessions_JoinSession -> p2p_register_peer_address) and must NOT leak into
     // the EOS_SessionDetails_Info the game reads — an ip:port here breaks the game's
     // connect-string resolution (E007 right after JoinSession, before NetDriver).
-    char* host_address = calloc(1, 1);
+    // An "EOS:..." address the host game set itself is passed through, though:
+    // Remnant II resolves it and crashes on a NULL address when it is empty.
+    const char* game_addr = game_host_address(session);
+    char* host_address = calloc(1, strlen(game_addr) + 1);
     char* bucket_id = calloc(1, strlen(session->bucket_id) + 1);
 
     if (!session_id || !host_address || !bucket_id) {
@@ -44,6 +69,7 @@ static EOS_SessionDetails_Info* session_to_info(const Session* session) {
     }
 
     strcpy(session_id, session->session_id);
+    strcpy(host_address, game_addr);
     strcpy(bucket_id, session->bucket_id);
 
     // Fill settings
@@ -134,7 +160,11 @@ EOS_DECLARE_FUNC(uint32_t) EOS_SessionDetails_GetSessionAttributeCount(
         return 0;
     }
 
-    return (uint32_t)details->session.attribute_count;
+    uint32_t count = 0;
+    for (int i = 0; i < details->session.attribute_count; i++) {
+        if (!attr_hidden(&details->session.attributes[i])) count++;
+    }
+    return count;
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionDetails_CopySessionAttributeByIndex(
@@ -156,11 +186,12 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionDetails_CopySessionAttributeByIndex(
         return EOS_InvalidParameters;
     }
 
-    if (Options->AttrIndex >= (uint32_t)details->session.attribute_count) {
+    int real_index = real_attr_index(&details->session, Options->AttrIndex);
+    if (real_index < 0) {
         return EOS_NotFound;
     }
 
-    const SessionAttribute* attr = &details->session.attributes[Options->AttrIndex];
+    const SessionAttribute* attr = &details->session.attributes[real_index];
 
     // Allocate structures
     EOS_SessionDetails_Attribute* out_attr = calloc(1, sizeof(EOS_SessionDetails_Attribute));
@@ -233,12 +264,16 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionDetails_CopySessionAttributeByKey(
         return EOS_InvalidParameters;
     }
 
-    // Find attribute by key
+    // Find attribute by key (index counted over the game-visible attributes)
+    uint32_t visible_index = 0;
     for (int i = 0; i < details->session.attribute_count; i++) {
-        if (strcmp(details->session.attributes[i].key, Options->AttrKey) == 0) {
+        if (attr_hidden(&details->session.attributes[i])) continue;
+        if (strcmp(details->session.attributes[i].key, Options->AttrKey) != 0) {
+            visible_index++;
+        } else {
             EOS_SessionDetails_CopySessionAttributeByIndexOptions index_opts = {
                 .ApiVersion = EOS_SESSIONDETAILS_COPYSESSIONATTRIBUTEBYINDEX_API_LATEST,
-                .AttrIndex = (uint32_t)i
+                .AttrIndex = visible_index
             };
             return EOS_SessionDetails_CopySessionAttributeByIndex(Handle, &index_opts, OutSessionAttribute);
         }

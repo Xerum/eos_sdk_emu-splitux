@@ -49,6 +49,33 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetHostAddress(
         return EOS_InvalidParameters;
     }
 
+    // A game-built address ("EOS:<puid>:<socket>:<channel>", Remnant II) is what
+    // joiners must get back in EOS_SessionDetails_Info::HostAddress, but our own
+    // host_address has to stay the LAN ip:port of the P2P transport. Keep the
+    // game's value in a hidden attribute that travels with the announce.
+    if (strncmp(Options->HostAddress, "EOS:", 4) == 0) {
+        SessionAttribute* attr = NULL;
+        for (int i = 0; i < mod->session.attribute_count; i++) {
+            if (strcmp(mod->session.attributes[i].key, LAN_HOSTADDR_ATTR) == 0) {
+                attr = &mod->session.attributes[i];
+                break;
+            }
+        }
+        if (!attr) {
+            if (mod->session.attribute_count >= MAX_SESSION_ATTRIBUTES) {
+                return EOS_LimitExceeded;
+            }
+            attr = &mod->session.attributes[mod->session.attribute_count++];
+        }
+        memset(attr, 0, sizeof(*attr));
+        strncpy(attr->key, LAN_HOSTADDR_ATTR, sizeof(attr->key) - 1);
+        attr->type = EOS_AT_STRING;
+        attr->advertisement = EOS_SAAT_Advertise;
+        strncpy(attr->value.as_string, Options->HostAddress, sizeof(attr->value.as_string) - 1);
+        EOS_LOG_INFO("SetHostAddress: game address '%s' kept as %s", Options->HostAddress, LAN_HOSTADDR_ATTR);
+        return EOS_Success;
+    }
+
     strncpy(mod->session.host_address, Options->HostAddress, sizeof(mod->session.host_address) - 1);
     mod->session.host_address[sizeof(mod->session.host_address) - 1] = '\0';
 

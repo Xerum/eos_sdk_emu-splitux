@@ -13,6 +13,10 @@ typedef struct DiscoveryService DiscoveryService;
 #define MAX_SESSION_ATTRIBUTES 64
 #define MAX_SESSION_ATTRIBUTE_KEY_LEN 64
 #define MAX_SESSION_ATTRIBUTE_VALUE_LEN 256
+
+// Hidden attribute carrying a game-set "EOS:..." host address over the LAN announce
+// (session host_address itself stays the P2P ip:port). Never shown to the game.
+#define LAN_HOSTADDR_ATTR "__lan_hostaddr"
 #define MAX_REGISTERED_PLAYERS 64
 #define MAX_LOCAL_SESSIONS 8
 #define MAX_DISCOVERED_SESSIONS 32
