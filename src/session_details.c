@@ -138,8 +138,8 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionDetails_CopyInfo(
         return EOS_LimitExceeded;
     }
 
-    EOS_LOG_INFO(">>> EOS_SessionDetails_CopyInfo: session='%s' owner='%s' perm=%d presence=%d attrs=%d",
-                 details->session.session_id, details->session.owner_id_string,
+    EOS_LOG_INFO(">>> EOS_SessionDetails_CopyInfo: session='%s' host='%s' owner='%s' perm=%d presence=%d attrs=%d",
+                 details->session.session_id, info->HostAddress, details->session.owner_id_string,
                  (int)details->session.permission_level, (int)details->session.presence_enabled,
                  details->session.attribute_count);
     *OutSessionInfo = info;
