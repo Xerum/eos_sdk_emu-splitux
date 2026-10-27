@@ -142,6 +142,10 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionDetails_CopyInfo(
                  details->session.session_id, info->HostAddress, details->session.owner_id_string,
                  (int)details->session.permission_level, (int)details->session.presence_enabled,
                  details->session.attribute_count);
+    EOS_LOG_INFO(">>> CopyInfo settings: max=%u open=%u registered=%d joinInProgress=%d invites=%d bucket='%s'",
+                 info->Settings->NumPublicConnections, info->NumOpenPublicConnections,
+                 details->session.registered_player_count, (int)info->Settings->bAllowJoinInProgress,
+                 (int)info->Settings->bInvitesAllowed, info->Settings->BucketId);
     *OutSessionInfo = info;
     return EOS_Success;
 }
