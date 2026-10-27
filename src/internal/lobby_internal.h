@@ -24,6 +24,7 @@ typedef struct DiscoveryService DiscoveryService;
 #define LOBBY_HOST_ADDRESS_LEN 64         // "IP:port" for P2P address book
 #define LOBBY_OWNER_ID_STRING_LEN 33
 #define LOBBY_SOURCE_IP_LEN 16
+#define LOBBY_STALE_MS 8000               // no announce for this long = lobby gone (LAN sync/search)
 
 // A single lobby/member attribute (lobby uses EOS_EAttributeType, not the sessions enum)
 typedef struct {
@@ -44,6 +45,7 @@ typedef struct {
     char member_id_string[LOBBY_OWNER_ID_STRING_LEN];
     LobbyAttribute attributes[MAX_MEMBER_ATTRIBUTES];
     int attribute_count;
+    uint64_t last_seen;   // owner side: last re-announce heard from this member (LAN sync)
     bool valid;
 } LobbyMember;
 
@@ -55,6 +57,9 @@ typedef struct {
     // Owner
     EOS_ProductUserId owner_id;
     char owner_id_string[LOBBY_OWNER_ID_STRING_LEN];
+
+    // Local user that created/joined this lobby (local lobbies only; LAN sync sender id)
+    char self_id_string[LOBBY_OWNER_ID_STRING_LEN];
 
     // Configuration
     char bucket_id[LOBBY_BUCKET_ID_LEN];

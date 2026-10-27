@@ -52,6 +52,7 @@ struct DiscoveryService {
     char broadcast_addr[16];
     bool localhost_mode;  // Enable localhost unicast for Wine/Proton
     bool query_received;  // Flag to indicate a query was received and we should broadcast
+    bool key_by_source;   // cache key = session id + source ip (lobby member sync)
 
     CachedSession cache[MAX_CACHED_SESSIONS];
     int cache_count;
@@ -259,9 +260,12 @@ static bool parse_announcement(const uint8_t* buf, int len, Session* session) {
 static void add_to_cache(DiscoveryService* ds, const Session* session, const char* source_ip) {
     if (!ds || !session) return;
 
-    // Check if session already exists in cache (update it)
+    // Check if session already exists in cache (update it). With key_by_source the
+    // same id announced by different hosts (lobby owner + its members) gets one
+    // entry per sender instead of the senders overwriting each other.
     for (int i = 0; i < ds->cache_count; i++) {
-        if (strcmp(ds->cache[i].session.session_id, session->session_id) == 0) {
+        if (strcmp(ds->cache[i].session.session_id, session->session_id) == 0 &&
+            (!ds->key_by_source || strcmp(ds->cache[i].source_ip, source_ip) == 0)) {
             memcpy(&ds->cache[i].session, session, sizeof(Session));
             strncpy(ds->cache[i].source_ip, source_ip, sizeof(ds->cache[i].source_ip) - 1);
             ds->cache[i].received_at = get_time_ms();
@@ -269,13 +273,22 @@ static void add_to_cache(DiscoveryService* ds, const Session* session, const cha
         }
     }
 
-    // Add new session if space available
-    if (ds->cache_count < MAX_CACHED_SESSIONS) {
-        memcpy(&ds->cache[ds->cache_count].session, session, sizeof(Session));
-        strncpy(ds->cache[ds->cache_count].source_ip, source_ip, sizeof(ds->cache[ds->cache_count].source_ip) - 1);
-        ds->cache[ds->cache_count].received_at = get_time_ms();
+    // Add new session; when the cache is full, recycle the entry heard from least
+    // recently (entries never expired before, so long sessions that keep creating
+    // lobbies silently stopped discovering new ones after 64).
+    int slot = ds->cache_count;
+    if (slot >= MAX_CACHED_SESSIONS) {
+        slot = 0;
+        for (int i = 1; i < ds->cache_count; i++) {
+            if (ds->cache[i].received_at < ds->cache[slot].received_at) slot = i;
+        }
+    } else {
         ds->cache_count++;
     }
+    memcpy(&ds->cache[slot].session, session, sizeof(Session));
+    memset(ds->cache[slot].source_ip, 0, sizeof(ds->cache[slot].source_ip));
+    strncpy(ds->cache[slot].source_ip, source_ip, sizeof(ds->cache[slot].source_ip) - 1);
+    ds->cache[slot].received_at = get_time_ms();
 }
 
 // ===== User beacons (user existence + presence, independent of sessions) =====
@@ -675,6 +688,15 @@ Session* discovery_get_sessions(DiscoveryService* ds, int* out_count) {
 const Session* discovery_get_session_at(DiscoveryService* ds, int index) {
     if (!ds || index < 0 || index >= ds->cache_count) return NULL;
     return &ds->cache[index].session;
+}
+
+uint64_t discovery_get_received_at(DiscoveryService* ds, int index) {
+    if (!ds || index < 0 || index >= ds->cache_count) return 0;
+    return ds->cache[index].received_at;
+}
+
+void discovery_set_key_by_source(DiscoveryService* ds, bool on) {
+    if (ds) ds->key_by_source = on;
 }
 
 const Session* discovery_find_cached_session(DiscoveryService* ds, const char* session_id) {

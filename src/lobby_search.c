@@ -4,6 +4,7 @@
 #include "internal/callbacks.h"
 #include "internal/lan_discovery.h"
 #include "internal/logging.h"
+#include "lan_common.h"   /* get_time_ms */
 #include <stdlib.h>
 #include <string.h>
 
@@ -325,6 +326,14 @@ EOS_DECLARE_FUNC(void) EOS_LobbySearch_Find(
         Lobby* l = &state->discovered_lobbies[i];
 
         if (!l->valid) {
+            continue;
+        }
+
+        // Skip lobbies whose announcements stopped (destroyed/left): discovered
+        // entries are never removed, so without this a search could "find" and
+        // join a lobby that no longer exists.
+        if (l->last_seen && get_time_ms() - l->last_seen > LOBBY_STALE_MS) {
+            EOS_LOG_DEBUG("LobbySearch_Find:   skip stale lobby %s", l->lobby_id);
             continue;
         }
 

@@ -323,6 +323,197 @@ static void lobby_fire_member_update(LobbyState* state, const char* lobby_id,
  * lobby attribute visibility maps to session advertisement type.
  * ===========================================================================*/
 
+/* defined further down; the sync helpers queue a re-announce */
+static void lobby_request_announce(LobbyState* state);
+
+/* ===========================================================================
+ * LAN member sync
+ *
+ * The announce wire format only carries the owner and a member count, so a
+ * remote join stayed invisible to the owner and the owner's later lobby
+ * updates never reached joiners (Returnal: the host waits for the member to
+ * join, then sets MatchResult; the joiner waits for that update and times
+ * out). Lobby announces now reuse the otherwise unused presence records to
+ * carry the sender ("__lan_src") and the member list ("__lan_mem"):
+ *   - owner: a member re-announcing the joined lobby = join/keep-alive; a
+ *     member that stops re-announcing is dropped after LOBBY_STALE_MS;
+ *   - member: the owner's announces are authoritative for attributes and
+ *     members; when they stop, the lobby is reported CLOSED.
+ * Only announces younger than LOBBY_STALE_MS count, because the discovery
+ * cache keeps the last packet of every sender forever.
+ * ===========================================================================*/
+#define LAN_SRC_KEY "__lan_src"
+#define LAN_MEM_KEY "__lan_mem"
+
+static void lobby_wire_add_record(Session* s, const char* key, const char* value) {
+    PresenceRecord* r;
+    if (!value || !value[0] || s->presence_record_count >= MAX_PRESENCE_RECORDS) {
+        return;
+    }
+    r = &s->presence_records[s->presence_record_count++];
+    memset(r, 0, sizeof(*r));
+    strncpy(r->key, key, PRESENCE_KEY_LEN - 1);
+    strncpy(r->value, value, PRESENCE_VALUE_LEN - 1);
+}
+
+static bool lobby_wire_lists_member(const Session* s, const char* id) {
+    int i;
+    for (i = 0; i < s->presence_record_count; i++) {
+        if (strcmp(s->presence_records[i].key, LAN_MEM_KEY) == 0 &&
+            strcmp(s->presence_records[i].value, id) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static LobbyMember* lobby_find_member_str(Lobby* l, const char* id) {
+    int i;
+    for (i = 0; i < l->member_count; i++) {
+        if (l->members[i].valid && strcmp(l->members[i].member_id_string, id) == 0) {
+            return &l->members[i];
+        }
+    }
+    return NULL;
+}
+
+static bool lobby_is_own(const Lobby* l) {
+    return l->self_id_string[0] != '\0' && strcmp(l->self_id_string, l->owner_id_string) == 0;
+}
+
+static void lobby_sync_from_wire(LobbyState* state, Lobby* l, const Lobby* cand,
+                                 const Session* s, uint64_t received_at) {
+    const char* src = NULL;
+    int i;
+
+    if (!l->self_id_string[0] || !received_at ||
+        get_time_ms() - received_at > LOBBY_STALE_MS) {
+        return;
+    }
+    for (i = 0; i < s->presence_record_count; i++) {
+        if (strcmp(s->presence_records[i].key, LAN_SRC_KEY) == 0) {
+            src = s->presence_records[i].value;
+            break;
+        }
+    }
+    if (!src || !src[0] || strcmp(src, l->self_id_string) == 0) {
+        return;  /* foreign build without sync, or our own echo */
+    }
+
+    if (lobby_is_own(l)) {
+        /* We own it: the sender is a member announcing its joined copy. */
+        LobbyMember* m = lobby_find_member_str(l, src);
+        if (m) {
+            if (received_at > m->last_seen) m->last_seen = received_at;
+            return;
+        }
+        if (l->max_members && (uint32_t)l->member_count >= l->max_members) {
+            EOS_LOG_WARN("LAN sync: %s wants into full lobby %s", src, l->lobby_id);
+            return;
+        }
+        m = lobby_add_member(l, EOS_ProductUserId_FromString(src));
+        if (!m) {
+            return;
+        }
+        m->last_seen = received_at;
+        l->last_updated = get_time_ms();
+        EOS_LOG_INFO("LAN sync: %s joined our lobby %s (%d members)", src, l->lobby_id, l->member_count);
+        lobby_fire_member_status(state, l->lobby_id, m->member_id, EOS_LMS_JOINED);
+        lobby_fire_lobby_update(state, l->lobby_id);
+        lobby_request_announce(state);
+        return;
+    }
+
+    if (strcmp(src, l->owner_id_string) != 0) {
+        return;  /* only the owner is authoritative for a joined lobby */
+    }
+    if (received_at > l->last_seen) l->last_seen = received_at;
+
+    {
+        bool changed = false;
+
+        if (cand->attribute_count != l->attribute_count ||
+            memcmp(cand->attributes, l->attributes,
+                   sizeof(LobbyAttribute) * (size_t)cand->attribute_count) != 0) {
+            memcpy(l->attributes, cand->attributes, sizeof(l->attributes));
+            l->attribute_count = cand->attribute_count;
+            changed = true;
+        }
+        if (cand->max_members != l->max_members || cand->permission_level != l->permission_level) {
+            l->max_members = cand->max_members;
+            l->permission_level = cand->permission_level;
+            changed = true;
+        }
+
+        /* Members the owner lists that we did not know yet. */
+        for (i = 0; i < s->presence_record_count; i++) {
+            const char* id = s->presence_records[i].value;
+            if (strcmp(s->presence_records[i].key, LAN_MEM_KEY) != 0 || !id[0]) {
+                continue;
+            }
+            if (!lobby_find_member_str(l, id)) {
+                LobbyMember* m = lobby_add_member(l, EOS_ProductUserId_FromString(id));
+                if (m) {
+                    lobby_fire_member_status(state, l->lobby_id, m->member_id, EOS_LMS_JOINED);
+                    changed = true;
+                }
+            }
+        }
+        /* Members the owner no longer lists (never drop ourselves: the owner only
+         * lists us once it heard our first re-announce). */
+        for (i = l->member_count - 1; i >= 0; i--) {
+            const char* id = l->members[i].member_id_string;
+            if (!id[0] || strcmp(id, l->self_id_string) == 0 || lobby_wire_lists_member(s, id)) {
+                continue;
+            }
+            {
+                EOS_ProductUserId gone = l->members[i].member_id;
+                lobby_remove_member_at(l, i);
+                lobby_fire_member_status(state, l->lobby_id, gone, EOS_LMS_LEFT);
+                changed = true;
+            }
+        }
+
+        if (changed) {
+            l->last_updated = get_time_ms();
+            EOS_LOG_INFO("LAN sync: lobby %s updated from owner (%d attrs, %d members)",
+                         l->lobby_id, l->attribute_count, l->member_count);
+            lobby_fire_lobby_update(state, l->lobby_id);
+        }
+    }
+}
+
+/* Owner: drop members that stopped re-announcing. Member: report CLOSED once
+ * the owner's announces stop (lobby destroyed or owner gone). */
+static void lobby_sync_timeouts(LobbyState* state, uint64_t now) {
+    int li;
+    for (li = 0; li < state->local_lobby_count; li++) {
+        Lobby* l = &state->local_lobbies[li];
+        if (!l->valid || !l->self_id_string[0]) {
+            continue;
+        }
+        if (lobby_is_own(l)) {
+            int mi;
+            for (mi = l->member_count - 1; mi >= 0; mi--) {
+                LobbyMember* m = &l->members[mi];
+                if (m->last_seen && now - m->last_seen > LOBBY_STALE_MS) {
+                    EOS_ProductUserId gone = m->member_id;
+                    EOS_LOG_INFO("LAN sync: member %s timed out in lobby %s", m->member_id_string, l->lobby_id);
+                    lobby_remove_member_at(l, mi);
+                    lobby_fire_member_status(state, l->lobby_id, gone, EOS_LMS_LEFT);
+                    lobby_fire_lobby_update(state, l->lobby_id);
+                    lobby_request_announce(state);
+                }
+            }
+        } else if (l->last_seen && now - l->last_seen > LOBBY_STALE_MS) {
+            LobbyMember* self = lobby_find_member_str(l, l->self_id_string);
+            EOS_LOG_INFO("LAN sync: owner stopped announcing lobby %s -> closed", l->lobby_id);
+            l->last_seen = 0;
+            lobby_fire_member_status(state, l->lobby_id, self ? self->member_id : NULL, EOS_LMS_CLOSED);
+        }
+    }
+}
+
 static void lobby_to_session(const Lobby* lobby, Session* s) {
     int i;
     memset(s, 0, sizeof(*s));
@@ -356,6 +547,15 @@ static void lobby_to_session(const Lobby* lobby, Session* s) {
         memcpy(&sa->value, &la->value, sizeof(sa->value));
         sa->advertisement = (la->visibility == EOS_LAT_PUBLIC)
             ? EOS_SAAT_Advertise : EOS_SAAT_DontAdvertise;
+    }
+
+    /* LAN member sync: sender + member list ride in the presence records. */
+    s->presence_record_count = 0;
+    lobby_wire_add_record(s, LAN_SRC_KEY, lobby->self_id_string);
+    for (i = 0; i < lobby->member_count; i++) {
+        if (lobby->members[i].valid) {
+            lobby_wire_add_record(s, LAN_MEM_KEY, lobby->members[i].member_id_string);
+        }
     }
 
     s->valid = true;
@@ -457,6 +657,8 @@ LobbyState* lobby_create(PlatformState* platform) {
     }
 
     discovery_set_broadcast_addr(state->discovery, broadcast_addr);
+    /* Owner and members announce the same lobby id: keep one cache entry per sender. */
+    discovery_set_key_by_source(state->discovery, true);
 
     EOS_LOG_INFO("LobbyState created with LAN discovery: port=%u, broadcast=%s, interval=%ums",
                  lobby_port, broadcast_addr, state->announce_interval_ms);
@@ -532,6 +734,8 @@ void lobby_tick(LobbyState* state) {
         state->last_announce_time = now;
     }
 
+    lobby_sync_timeouts(state, now);
+
     /* Convert the discovery cache into discovered_lobbies. We update in place
      * keyed by lobby id and never reorder/remove entries: a discovered lobby's
      * lazily-parsed owner_id pointer can escape into LobbyDetails/search-result
@@ -547,16 +751,28 @@ void lobby_tick(LobbyState* state) {
         if (!ds_entry) continue;
         session_to_lobby(ds_entry, &cand);
 
-        /* Skip echoes of our own lobbies. */
-        if (find_local_lobby_by_id(state, cand.lobby_id)) {
-            continue;
+        /* Our own (created or joined) lobby: announces from other LAN members carry
+         * membership/attribute changes (LAN sync); our own echoes are ignored there. */
+        {
+            Lobby* own = find_local_lobby_by_id(state, cand.lobby_id);
+            if (own) {
+                lobby_sync_from_wire(state, own, &cand, ds_entry,
+                                     discovery_get_received_at(state->discovery, c));
+                continue;
+            }
         }
+        cand.last_seen = discovery_get_received_at(state->discovery, c);
 
         for (i = 0; i < state->discovered_lobby_count; i++) {
             if (strcmp(state->discovered_lobbies[i].lobby_id, cand.lobby_id) == 0) {
                 slot = &state->discovered_lobbies[i];
                 break;
             }
+        }
+
+        /* Owner and members announce the same id; keep the freshest copy. */
+        if (slot && cand.last_seen < slot->last_seen) {
+            continue;
         }
 
         if (slot) {
@@ -568,8 +784,26 @@ void lobby_tick(LobbyState* state) {
                 slot->owner_id = EOS_ProductUserId_FromString(slot->owner_id_string);
             }
             lobby_seed_owner_member(slot);
-        } else if (state->discovered_lobby_count < MAX_DISCOVERED_LOBBIES) {
-            Lobby* ns = &state->discovered_lobbies[state->discovered_lobby_count++];
+        } else {
+            Lobby* ns = NULL;
+            if (state->discovered_lobby_count < MAX_DISCOVERED_LOBBIES) {
+                ns = &state->discovered_lobbies[state->discovered_lobby_count++];
+            } else {
+                /* Full (entries are never removed): recycle the least recently
+                 * heard one once it is stale, so new lobbies stay discoverable. */
+                int oldest = 0;
+                for (i = 1; i < state->discovered_lobby_count; i++) {
+                    if (state->discovered_lobbies[i].last_seen < state->discovered_lobbies[oldest].last_seen) {
+                        oldest = i;
+                    }
+                }
+                if (get_time_ms() - state->discovered_lobbies[oldest].last_seen > LOBBY_STALE_MS) {
+                    ns = &state->discovered_lobbies[oldest];
+                }
+            }
+            if (!ns) {
+                continue;
+            }
             *ns = cand;
             if (ns->owner_id_string[0] != '\0') {
                 ns->owner_id = EOS_ProductUserId_FromString(ns->owner_id_string);
@@ -705,6 +939,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_CreateLobby(
     /* Owner = creating user; auto-joins as first member. */
     l->owner_id = Options->LocalUserId;
     puid_to_string(l->owner_id, l->owner_id_string, sizeof(l->owner_id_string));
+    strncpy(l->self_id_string, l->owner_id_string, sizeof(l->self_id_string) - 1);
 
     /* Configuration */
     l->max_members = Options->MaxLobbyMembers;
@@ -864,6 +1099,8 @@ static EOS_EResult lobby_join_common(LobbyState* state, const Lobby* snapshot,
 
     /* Add the local user as a member. */
     lobby_add_member(l, local_user);
+    memset(l->self_id_string, 0, sizeof(l->self_id_string));
+    puid_to_string(local_user, l->self_id_string, sizeof(l->self_id_string));
 
     /* Register the host address into the P2P address book so P2P can route to
      * the lobby owner (analogous to a session join). */

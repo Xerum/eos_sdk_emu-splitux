@@ -45,6 +45,12 @@ Session* discovery_get_sessions(DiscoveryService* ds, int* out_count);
 /** Get cached session #index (0..count-1). Use this to iterate; do not index the discovery_get_sessions() pointer. */
 const Session* discovery_get_session_at(DiscoveryService* ds, int index);
 
+/** Local receive time (get_time_ms) of cached session #index, 0 if out of range. */
+uint64_t discovery_get_received_at(DiscoveryService* ds, int index);
+
+/** Key the cache by session id + source IP instead of id alone (lobby member sync). */
+void discovery_set_key_by_source(DiscoveryService* ds, bool on);
+
 /**
  * Find a single discovered session by its session_id in the live cache, or NULL.
  * Used to re-pull the freshest advertised attributes for a session the game is
