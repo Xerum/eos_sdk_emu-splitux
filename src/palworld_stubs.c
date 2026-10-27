@@ -17,11 +17,14 @@ extern const char* social_bridge_resolve_epic_by_steam(const char* steam_id);
 // Suppress unused parameter warnings
 #define UNUSED(x) (void)(x)
 
+// xerum_callbacks.c: queues a completion delegate on the platform's callback queue.
+extern void xerum_queue_completion(void* handle, void* callback_fn, const void* info, size_t info_size);
+
 // ============ Achievements ============
-EOS_DECLARE_FUNC(void) EOS_Achievements_QueryDefinitions(EOS_HAchievements Handle, const void* Options, void* ClientData, void* Callback) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Handle); UNUSED(Options); UNUSED(ClientData); UNUSED(Callback); }
+EOS_DECLARE_FUNC(void) EOS_Achievements_QueryDefinitions(EOS_HAchievements Handle, const void* Options, void* ClientData, void* Callback) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Options); EOS_Achievements_OnQueryDefinitionsCompleteCallbackInfo info = {0}; info.ResultCode = EOS_Success; info.ClientData = ClientData; xerum_queue_completion(Handle, Callback, &info, sizeof(info)); }
 EOS_DECLARE_FUNC(uint32_t) EOS_Achievements_GetAchievementDefinitionCount(EOS_HAchievements Handle, const void* Options) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Handle); UNUSED(Options); return 0; }
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyAchievementDefinitionByIndex(EOS_HAchievements Handle, const void* Options, void** Out) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Handle); UNUSED(Options); if(Out) *Out = NULL; return EOS_NotFound; }
-EOS_DECLARE_FUNC(void) EOS_Achievements_QueryPlayerAchievements(EOS_HAchievements Handle, const void* Options, void* ClientData, void* Callback) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Handle); UNUSED(Options); UNUSED(ClientData); UNUSED(Callback); }
+EOS_DECLARE_FUNC(void) EOS_Achievements_QueryPlayerAchievements(EOS_HAchievements Handle, const void* Options, void* ClientData, void* Callback) { EOS_LOG_WARN("STUB called: %s", __func__); const EOS_Achievements_QueryPlayerAchievementsOptions* o = (const EOS_Achievements_QueryPlayerAchievementsOptions*)Options; EOS_Achievements_OnQueryPlayerAchievementsCompleteCallbackInfo info = {0}; info.ResultCode = EOS_Success; info.ClientData = ClientData; if (o) { info.TargetUserId = o->TargetUserId; info.LocalUserId = o->LocalUserId; } xerum_queue_completion(Handle, Callback, &info, sizeof(info)); }
 EOS_DECLARE_FUNC(uint32_t) EOS_Achievements_GetPlayerAchievementCount(EOS_HAchievements Handle, const void* Options) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Handle); UNUSED(Options); return 0; }
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Achievements_CopyPlayerAchievementByIndex(EOS_HAchievements Handle, const void* Options, void** Out) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Handle); UNUSED(Options); if(Out) *Out = NULL; return EOS_NotFound; }
 EOS_DECLARE_FUNC(void) EOS_Achievements_Definition_Release(void* Def) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Def); }
@@ -204,10 +207,10 @@ EOS_DECLARE_FUNC(void) EOS_Friends_RejectInvite(EOS_HFriends Handle, const void*
 // EOS_Friends_AddNotifyFriendsUpdate / RemoveNotifyFriendsUpdate implemented in src/social_bridge.c
 
 // ============ Leaderboards ============
-EOS_DECLARE_FUNC(void) EOS_Leaderboards_QueryLeaderboardRanks(EOS_HLeaderboards Handle, const void* Options, void* ClientData, void* Callback) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Handle); UNUSED(Options); UNUSED(ClientData); UNUSED(Callback); }
+EOS_DECLARE_FUNC(void) EOS_Leaderboards_QueryLeaderboardRanks(EOS_HLeaderboards Handle, const void* Options, void* ClientData, void* Callback) { EOS_LOG_WARN("STUB called: %s", __func__); const EOS_Leaderboards_QueryLeaderboardRanksOptions* o = (const EOS_Leaderboards_QueryLeaderboardRanksOptions*)Options; EOS_Leaderboards_OnQueryLeaderboardRanksCompleteCallbackInfo info = {0}; info.ResultCode = EOS_Success; info.ClientData = ClientData; info.LeaderboardId = o ? o->LeaderboardId : NULL; xerum_queue_completion(Handle, Callback, &info, sizeof(info)); }
 EOS_DECLARE_FUNC(uint32_t) EOS_Leaderboards_GetLeaderboardRecordCount(EOS_HLeaderboards Handle, const void* Options) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Handle); UNUSED(Options); return 0; }
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardRecordByIndex(EOS_HLeaderboards Handle, const void* Options, void** Out) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Handle); UNUSED(Options); if(Out) *Out = NULL; return EOS_NotFound; }
-EOS_DECLARE_FUNC(void) EOS_Leaderboards_QueryLeaderboardUserScores(EOS_HLeaderboards Handle, const void* Options, void* ClientData, void* Callback) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Handle); UNUSED(Options); UNUSED(ClientData); UNUSED(Callback); }
+EOS_DECLARE_FUNC(void) EOS_Leaderboards_QueryLeaderboardUserScores(EOS_HLeaderboards Handle, const void* Options, void* ClientData, void* Callback) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Options); EOS_Leaderboards_OnQueryLeaderboardUserScoresCompleteCallbackInfo info = {0}; info.ResultCode = EOS_Success; info.ClientData = ClientData; xerum_queue_completion(Handle, Callback, &info, sizeof(info)); }
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Leaderboards_CopyLeaderboardUserScoreByUserId(EOS_HLeaderboards Handle, const void* Options, void** Out) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Handle); UNUSED(Options); if(Out) *Out = NULL; return EOS_NotFound; }
 EOS_DECLARE_FUNC(void) EOS_Leaderboards_LeaderboardUserScore_Release(EOS_Leaderboards_LeaderboardUserScore* Score) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Score); }
 
@@ -215,7 +218,7 @@ EOS_DECLARE_FUNC(void) EOS_Leaderboards_LeaderboardUserScore_Release(EOS_Leaderb
 // NOTE: the real Lobby interface now lives in lobby.c / lobby_modification.c /
 // lobby_search.c / lobby_details.c. Only EOS_Lobby_SendInvite remains a stub
 // (no LAN invite system; Palworld co-op uses search + join, not invites).
-EOS_DECLARE_FUNC(void) EOS_Lobby_SendInvite(EOS_HLobby Handle, const void* Options, void* ClientData, void* Callback) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Handle); UNUSED(Options); UNUSED(ClientData); UNUSED(Callback); }
+EOS_DECLARE_FUNC(void) EOS_Lobby_SendInvite(EOS_HLobby Handle, const void* Options, void* ClientData, void* Callback) { EOS_LOG_WARN("STUB called: %s", __func__); const EOS_Lobby_SendInviteOptions* o = (const EOS_Lobby_SendInviteOptions*)Options; EOS_Lobby_SendInviteCallbackInfo info = {0}; info.ResultCode = EOS_Success; info.ClientData = ClientData; info.LobbyId = o ? o->LobbyId : NULL; xerum_queue_completion(Handle, Callback, &info, sizeof(info)); }
 
 // ============ Metrics ============
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Metrics_BeginPlayerSession(EOS_HMetrics Handle, const void* Options) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Handle); UNUSED(Options); return EOS_Success; }
@@ -280,8 +283,8 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_RTCAudio_UpdateReceiving(void* Handle, const v
 EOS_DECLARE_FUNC(EOS_EResult) EOS_RTCAudio_UpdateParticipantVolume(void* Handle, const void* Options, void* ClientData, void* Callback) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Handle); UNUSED(Options); UNUSED(ClientData); UNUSED(Callback); return EOS_Success; }
 
 // ============ Stats ============
-EOS_DECLARE_FUNC(void) EOS_Stats_IngestStat(EOS_HStats Handle, const void* Options, void* ClientData, void* Callback) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Handle); UNUSED(Options); UNUSED(ClientData); UNUSED(Callback); }
-EOS_DECLARE_FUNC(void) EOS_Stats_QueryStats(EOS_HStats Handle, const void* Options, void* ClientData, void* Callback) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Handle); UNUSED(Options); UNUSED(ClientData); UNUSED(Callback); }
+EOS_DECLARE_FUNC(void) EOS_Stats_IngestStat(EOS_HStats Handle, const void* Options, void* ClientData, void* Callback) { EOS_LOG_WARN("STUB called: %s", __func__); const EOS_Stats_IngestStatOptions* o = (const EOS_Stats_IngestStatOptions*)Options; EOS_Stats_IngestStatCompleteCallbackInfo info = {0}; info.ResultCode = EOS_Success; info.ClientData = ClientData; if (o) { info.LocalUserId = o->LocalUserId; info.TargetUserId = o->TargetUserId; } xerum_queue_completion(Handle, Callback, &info, sizeof(info)); }
+EOS_DECLARE_FUNC(void) EOS_Stats_QueryStats(EOS_HStats Handle, const void* Options, void* ClientData, void* Callback) { EOS_LOG_WARN("STUB called: %s", __func__); const EOS_Stats_QueryStatsOptions* o = (const EOS_Stats_QueryStatsOptions*)Options; EOS_Stats_OnQueryStatsCompleteCallbackInfo info = {0}; info.ResultCode = EOS_Success; info.ClientData = ClientData; if (o) { info.LocalUserId = o->LocalUserId; info.TargetUserId = o->TargetUserId; } xerum_queue_completion(Handle, Callback, &info, sizeof(info)); }
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Stats_CopyStatByName(EOS_HStats Handle, const void* Options, void** Out) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Handle); UNUSED(Options); if(Out) *Out = NULL; return EOS_NotFound; }
 EOS_DECLARE_FUNC(void) EOS_Stats_Stat_Release(EOS_Stats_Stat* Stat) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Stat); }
 
@@ -294,7 +297,7 @@ EOS_DECLARE_FUNC(void) EOS_TitleStorage_FileMetadata_Release(EOS_TitleStorage_Fi
 EOS_DECLARE_FUNC(void) EOS_TitleStorageFileTransferRequest_Release(EOS_HTitleStorageFileTransferRequest Handle) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Handle); }
 
 // ============ UI ============
-EOS_DECLARE_FUNC(EOS_EResult) EOS_UI_ShowFriends(EOS_HUI Handle, const void* Options, void* ClientData, void* Callback) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Handle); UNUSED(Options); UNUSED(ClientData); UNUSED(Callback); return EOS_NotConfigured; }
+EOS_DECLARE_FUNC(EOS_EResult) EOS_UI_ShowFriends(EOS_HUI Handle, const void* Options, void* ClientData, void* Callback) { EOS_LOG_WARN("STUB called: %s", __func__); const EOS_UI_ShowFriendsOptions* o = (const EOS_UI_ShowFriendsOptions*)Options; EOS_UI_ShowFriendsCallbackInfo info = {0}; info.ResultCode = EOS_Success; info.ClientData = ClientData; info.LocalUserId = o ? o->LocalUserId : NULL; xerum_queue_completion(Handle, Callback, &info, sizeof(info)); return EOS_Success; }
 EOS_DECLARE_FUNC(EOS_NotificationId) EOS_UI_AddNotifyDisplaySettingsUpdated(EOS_HUI Handle, const void* Options, void* ClientData, void* Callback) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Handle); UNUSED(Options); UNUSED(ClientData); UNUSED(Callback); return EOS_INVALID_NOTIFICATIONID; }
 EOS_DECLARE_FUNC(void) EOS_UI_RemoveNotifyDisplaySettingsUpdated(EOS_HUI Handle, EOS_NotificationId Id) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Handle); UNUSED(Id); }
 

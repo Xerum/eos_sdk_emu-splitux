@@ -33,6 +33,7 @@ set(SOURCES
     src/social_bridge.c
     src/missing_stubs.c
     src/stubs_generated.c
+    src/xerum_callbacks.c
 )
 
 # Include directories

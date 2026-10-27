@@ -10,6 +10,8 @@
 #include "internal/logging.h"
 #include <stdlib.h>
 #include <string.h>
+
+extern void xerum_queue_completion(void* handle, void* callback_fn, const void* info, size_t info_size);
 #include "eos/eos_stats.h"
 #include "eos/eos_leaderboards.h"
 #include "eos/eos_anticheatserver.h"
@@ -338,7 +340,22 @@ EOS_DECLARE_FUNC(void) EOS_Ecom_QueryEntitlementToken(EOS_HEcom Handle, const EO
 }
 
 EOS_DECLARE_FUNC(void) EOS_Ecom_QueryOwnership(EOS_HEcom Handle, const EOS_Ecom_QueryOwnershipOptions* Options, void* ClientData, const EOS_Ecom_OnQueryOwnershipCallback CompletionDelegate) {
-    (void)0;
+    // Report every requested item as owned. The array and id strings must outlive this call
+    // (the delegate runs on a later tick), so they are heap copies; the small leak is accepted.
+    uint32_t n = (Options && Options->CatalogItemIds) ? Options->CatalogItemIdCount : 0;
+    EOS_Ecom_ItemOwnership* items = n ? (EOS_Ecom_ItemOwnership*)calloc(n, sizeof(EOS_Ecom_ItemOwnership)) : NULL;
+    for (uint32_t i = 0; items && i < n; i++) {
+        items[i].ApiVersion = EOS_ECOM_ITEMOWNERSHIP_API_LATEST;
+        items[i].Id = Options->CatalogItemIds[i] ? _strdup(Options->CatalogItemIds[i]) : NULL;
+        items[i].OwnershipStatus = EOS_OS_Owned;
+    }
+    EOS_Ecom_QueryOwnershipCallbackInfo info = {0};
+    info.ResultCode = EOS_Success;
+    info.ClientData = ClientData;
+    info.LocalUserId = Options ? Options->LocalUserId : NULL;
+    info.ItemOwnership = items;
+    info.ItemOwnershipCount = items ? n : 0;
+    xerum_queue_completion(Handle, (void*)CompletionDelegate, &info, sizeof(info));
 }
 
 EOS_DECLARE_FUNC(void) EOS_Ecom_QueryOwnershipBySandboxIds(EOS_HEcom Handle, const EOS_Ecom_QueryOwnershipBySandboxIdsOptions* Options, void* ClientData, const EOS_Ecom_OnQueryOwnershipBySandboxIdsCallback CompletionDelegate) {
@@ -999,7 +1016,8 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_UserInfo_CopyExternalUserInfoByAccountId(EOS_H
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_UserInfo_CopyExternalUserInfoByAccountType(EOS_HUserInfo Handle, const EOS_UserInfo_CopyExternalUserInfoByAccountTypeOptions* Options, EOS_UserInfo_ExternalUserInfo ** OutExternalUserInfo) {
-    return EOS_NotConfigured;
+    if (OutExternalUserInfo) *OutExternalUserInfo = NULL;
+    return EOS_NotFound;
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_UserInfo_CopyExternalUserInfoByIndex(EOS_HUserInfo Handle, const EOS_UserInfo_CopyExternalUserInfoByIndexOptions* Options, EOS_UserInfo_ExternalUserInfo ** OutExternalUserInfo) {
