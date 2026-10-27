@@ -156,7 +156,11 @@ void sessions_tick(SessionsState* state) {
         // Broadcast all local sessions
         for (int i = 0; i < state->local_session_count; i++) {
             Session* s = &state->local_sessions[i];
-            if (s->valid && s->state == EOS_OSS_Pending) {
+            // Started sessions must keep advertising too: Remnant II calls
+            // StartSession right after creating, and a host announcing only while
+            // Pending was invisible to anyone who searched later.
+            if (s->valid && (s->state == EOS_OSS_Pending || s->state == EOS_OSS_Starting ||
+                             s->state == EOS_OSS_InProgress)) {
                 // Stamp the host's published presence (real join-info string +
                 // data records) onto the announce so joiners can relay it.
                 const char* ji = social_bridge_local_join_info();
