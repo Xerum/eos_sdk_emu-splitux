@@ -8,6 +8,8 @@
 #include "internal/callbacks.h"
 #include "internal/logging.h"
 #include "lan_p2p.h"
+
+bool sessions_find_owner_address(SessionsState* state, const char* owner_puid, char* out, size_t out_len);
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -648,7 +650,18 @@ void p2p_tick(P2PState* state) {
         PeerConnection* conn = &state->connections[i];
         if (!conn->valid) continue;
         if (conn->state != CONN_STATE_REQUESTING) continue;
-        if (conn->peer_address[0] == '\0') continue;  // no target yet
+        if (conn->peer_address[0] == '\0') {
+            // No JoinSession registered the peer (Remnant II joins through the Steam
+            // lobby and travels straight to EOS:<puid>): look the owner up in the
+            // LAN session announces, which carry the host's P2P ip:port.
+            if (!state->platform || !state->platform->sessions ||
+                !sessions_find_owner_address(state->platform->sessions, conn->peer_id_string,
+                                             conn->peer_address, sizeof(conn->peer_address))) {
+                continue;  // no target yet
+            }
+            EOS_LOG_INFO("P2P: resolved %s -> %s from session announce",
+                         conn->peer_id_string, conn->peer_address);
+        }
 
         if ((now - state->last_connect_send) >= P2P_CONNECT_RESEND_MS) {
             p2p_send_msg(state, conn, MSG_CONNECT, 0, NULL, 0);

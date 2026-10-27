@@ -33,6 +33,19 @@ void generate_session_id(char* buffer, size_t buffer_size) {
     buffer[len] = '\0';
 }
 
+// P2P address of a discovered session's owner (ip:port from its LAN announce).
+bool sessions_find_owner_address(SessionsState* state, const char* owner_puid, char* out, size_t out_len) {
+    if (!state || !owner_puid || !owner_puid[0] || !out || out_len == 0) return false;
+    for (int i = 0; i < state->discovered_session_count; i++) {
+        const Session* s = &state->discovered_sessions[i];
+        if (s->valid && s->host_address[0] && _stricmp(s->owner_id_string, owner_puid) == 0) {
+            strncpy(out, s->host_address, out_len - 1);
+            out[out_len - 1] = '\0';
+            return true;
+        }
+    }
+    return false;
+}
 Session* find_local_session_by_name(SessionsState* state, const char* name) {
     if (!state || !name) {
         return NULL;
