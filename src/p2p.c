@@ -668,7 +668,7 @@ void p2p_tick(P2PState* state) {
 EOS_EResult EOS_P2P_SendPacket(
     EOS_HP2P Handle,
     const EOS_P2P_SendPacketOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) {
         EOS_LOG_ERROR("P2P_SendPacket: Invalid handle");
@@ -791,7 +791,7 @@ EOS_EResult EOS_P2P_GetNextReceivedPacketSize(
     EOS_HP2P Handle,
     const EOS_P2P_GetNextReceivedPacketSizeOptions* Options,
     uint32_t* OutPacketSizeBytes
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) {
         return EOS_InvalidParameters;
@@ -840,7 +840,7 @@ EOS_EResult EOS_P2P_ReceivePacket(
     uint8_t* OutChannel,
     void* OutData,
     uint32_t* OutBytesWritten
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) {
         return EOS_InvalidParameters;
@@ -904,7 +904,7 @@ EOS_NotificationId EOS_P2P_AddNotifyPeerConnectionRequest(
     const EOS_P2P_AddNotifyPeerConnectionRequestOptions* Options,
     void* ClientData,
     EOS_P2P_OnIncomingConnectionRequestCallback ConnectionRequestHandler
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) {
         return EOS_INVALID_NOTIFICATIONID;
@@ -943,7 +943,7 @@ EOS_NotificationId EOS_P2P_AddNotifyPeerConnectionRequest(
 void EOS_P2P_RemoveNotifyPeerConnectionRequest(
     EOS_HP2P Handle,
     EOS_NotificationId NotificationId
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) return;
 
@@ -963,7 +963,7 @@ EOS_NotificationId EOS_P2P_AddNotifyPeerConnectionEstablished(
     const EOS_P2P_AddNotifyPeerConnectionEstablishedOptions* Options,
     void* ClientData,
     EOS_P2P_OnPeerConnectionEstablishedCallback ConnectionEstablishedHandler
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) {
         return EOS_INVALID_NOTIFICATIONID;
@@ -1002,7 +1002,7 @@ EOS_NotificationId EOS_P2P_AddNotifyPeerConnectionEstablished(
 void EOS_P2P_RemoveNotifyPeerConnectionEstablished(
     EOS_HP2P Handle,
     EOS_NotificationId NotificationId
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) return;
 
@@ -1022,7 +1022,7 @@ EOS_NotificationId EOS_P2P_AddNotifyPeerConnectionInterrupted(
     const EOS_P2P_AddNotifyPeerConnectionInterruptedOptions* Options,
     void* ClientData,
     EOS_P2P_OnPeerConnectionInterruptedCallback ConnectionInterruptedHandler
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) {
         return EOS_INVALID_NOTIFICATIONID;
@@ -1061,7 +1061,7 @@ EOS_NotificationId EOS_P2P_AddNotifyPeerConnectionInterrupted(
 void EOS_P2P_RemoveNotifyPeerConnectionInterrupted(
     EOS_HP2P Handle,
     EOS_NotificationId NotificationId
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) return;
 
@@ -1081,7 +1081,7 @@ EOS_NotificationId EOS_P2P_AddNotifyPeerConnectionClosed(
     const EOS_P2P_AddNotifyPeerConnectionClosedOptions* Options,
     void* ClientData,
     EOS_P2P_OnRemoteConnectionClosedCallback ConnectionClosedHandler
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) {
         return EOS_INVALID_NOTIFICATIONID;
@@ -1120,7 +1120,7 @@ EOS_NotificationId EOS_P2P_AddNotifyPeerConnectionClosed(
 void EOS_P2P_RemoveNotifyPeerConnectionClosed(
     EOS_HP2P Handle,
     EOS_NotificationId NotificationId
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) return;
 
@@ -1138,7 +1138,7 @@ void EOS_P2P_RemoveNotifyPeerConnectionClosed(
 EOS_EResult EOS_P2P_AcceptConnection(
     EOS_HP2P Handle,
     const EOS_P2P_AcceptConnectionOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) {
         return EOS_InvalidParameters;
@@ -1210,7 +1210,7 @@ EOS_EResult EOS_P2P_AcceptConnection(
 EOS_EResult EOS_P2P_CloseConnection(
     EOS_HP2P Handle,
     const EOS_P2P_CloseConnectionOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) {
         return EOS_InvalidParameters;
@@ -1259,7 +1259,7 @@ EOS_EResult EOS_P2P_CloseConnection(
 EOS_EResult EOS_P2P_CloseConnections(
     EOS_HP2P Handle,
     const EOS_P2P_CloseConnectionsOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) {
         return EOS_InvalidParameters;
@@ -1298,7 +1298,7 @@ void EOS_P2P_QueryNATType(
     const EOS_P2P_QueryNATTypeOptions* Options,
     void* ClientData,
     const EOS_P2P_OnQueryNATTypeCompleteCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) return;
 
@@ -1325,7 +1325,7 @@ EOS_EResult EOS_P2P_GetNATType(
     EOS_HP2P Handle,
     const EOS_P2P_GetNATTypeOptions* Options,
     EOS_ENATType* OutNATType
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) {
         return EOS_InvalidParameters;
@@ -1350,7 +1350,7 @@ EOS_EResult EOS_P2P_GetNATType(
 EOS_EResult EOS_P2P_SetRelayControl(
     EOS_HP2P Handle,
     const EOS_P2P_SetRelayControlOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) {
         return EOS_InvalidParameters;
@@ -1373,7 +1373,7 @@ EOS_EResult EOS_P2P_GetRelayControl(
     EOS_HP2P Handle,
     const EOS_P2P_GetRelayControlOptions* Options,
     EOS_ERelayControl* OutRelayControl
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) {
         return EOS_InvalidParameters;
@@ -1394,7 +1394,7 @@ EOS_EResult EOS_P2P_GetRelayControl(
 EOS_EResult EOS_P2P_SetPortRange(
     EOS_HP2P Handle,
     const EOS_P2P_SetPortRangeOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) {
         return EOS_InvalidParameters;
@@ -1419,7 +1419,7 @@ EOS_EResult EOS_P2P_GetPortRange(
     const EOS_P2P_GetPortRangeOptions* Options,
     uint16_t* OutPort,
     uint16_t* OutNumAdditionalPortsToTry
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) {
         return EOS_InvalidParameters;
@@ -1441,7 +1441,7 @@ EOS_EResult EOS_P2P_GetPortRange(
 EOS_EResult EOS_P2P_SetPacketQueueSize(
     EOS_HP2P Handle,
     const EOS_P2P_SetPacketQueueSizeOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) {
         return EOS_InvalidParameters;
@@ -1467,7 +1467,7 @@ EOS_EResult EOS_P2P_GetPacketQueueInfo(
     EOS_HP2P Handle,
     const EOS_P2P_GetPacketQueueInfoOptions* Options,
     EOS_P2P_PacketQueueInfo* OutPacketQueueInfo
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) {
         return EOS_InvalidParameters;
@@ -1496,7 +1496,7 @@ EOS_NotificationId EOS_P2P_AddNotifyIncomingPacketQueueFull(
     const EOS_P2P_AddNotifyIncomingPacketQueueFullOptions* Options,
     void* ClientData,
     EOS_P2P_OnIncomingPacketQueueFullCallback IncomingPacketQueueFullHandler
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) {
         return EOS_INVALID_NOTIFICATIONID;
@@ -1532,7 +1532,7 @@ EOS_NotificationId EOS_P2P_AddNotifyIncomingPacketQueueFull(
 void EOS_P2P_RemoveNotifyIncomingPacketQueueFull(
     EOS_HP2P Handle,
     EOS_NotificationId NotificationId
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) return;
 
@@ -1550,7 +1550,7 @@ void EOS_P2P_RemoveNotifyIncomingPacketQueueFull(
 EOS_EResult EOS_P2P_ClearPacketQueue(
     EOS_HP2P Handle,
     const EOS_P2P_ClearPacketQueueOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     P2PState* state = (P2PState*)Handle;
     if (!state || state->magic != P2P_MAGIC) {
         return EOS_InvalidParameters;

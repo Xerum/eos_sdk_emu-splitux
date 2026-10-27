@@ -99,7 +99,7 @@ const PresenceRecord* social_bridge_local_records(int* out_count) {
     return g_local_presence.records;
 }
 
-EOS_DECLARE_FUNC(EOS_EResult) EOS_Presence_CreatePresenceModification(EOS_HPresence Handle, const EOS_Presence_CreatePresenceModificationOptions* Options, EOS_HPresenceModification* OutPresenceModificationHandle) {
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Presence_CreatePresenceModification(EOS_HPresence Handle, const EOS_Presence_CreatePresenceModificationOptions* Options, EOS_HPresenceModification* OutPresenceModificationHandle) { EOS_LOG_TRACE("ENTER");
     (void)Handle; (void)Options;
     if (!OutPresenceModificationHandle) return EOS_InvalidParameters;
     PresenceModHandle* mod = calloc(1, sizeof(PresenceModHandle));
@@ -110,7 +110,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Presence_CreatePresenceModification(EOS_HPrese
     return EOS_Success;
 }
 
-EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetJoinInfo(EOS_HPresenceModification Handle, const EOS_PresenceModification_SetJoinInfoOptions* Options) {
+EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetJoinInfo(EOS_HPresenceModification Handle, const EOS_PresenceModification_SetJoinInfoOptions* Options) { EOS_LOG_TRACE("ENTER");
     PresenceModHandle* mod = (PresenceModHandle*)Handle;
     if (!mod || mod->magic != 0x504D4F44) return EOS_InvalidParameters;
     if (Options && Options->JoinInfo) {
@@ -124,14 +124,14 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetJoinInfo(EOS_HPresence
     return EOS_Success;
 }
 
-EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetStatus(EOS_HPresenceModification Handle, const EOS_PresenceModification_SetStatusOptions* Options) {
+EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetStatus(EOS_HPresenceModification Handle, const EOS_PresenceModification_SetStatusOptions* Options) { EOS_LOG_TRACE("ENTER");
     PresenceModHandle* mod = (PresenceModHandle*)Handle;
     if (!mod || mod->magic != 0x504D4F44) return EOS_InvalidParameters;
     if (Options) { mod->status = Options->Status; mod->has_status = 1; }
     return EOS_Success;
 }
 
-EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetRawRichText(EOS_HPresenceModification Handle, const EOS_PresenceModification_SetRawRichTextOptions* Options) {
+EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetRawRichText(EOS_HPresenceModification Handle, const EOS_PresenceModification_SetRawRichTextOptions* Options) { EOS_LOG_TRACE("ENTER");
     PresenceModHandle* mod = (PresenceModHandle*)Handle;
     if (!mod || mod->magic != 0x504D4F44) return EOS_InvalidParameters;
     if (Options && Options->RichText) {
@@ -143,7 +143,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetRawRichText(EOS_HPrese
     return EOS_Success;
 }
 
-EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetData(EOS_HPresenceModification Handle, const EOS_PresenceModification_SetDataOptions* Options) {
+EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_SetData(EOS_HPresenceModification Handle, const EOS_PresenceModification_SetDataOptions* Options) { EOS_LOG_TRACE("ENTER");
     PresenceModHandle* mod = (PresenceModHandle*)Handle;
     if (!mod || mod->magic != 0x504D4F44) return EOS_InvalidParameters;
     if (!Options || !Options->Records) return EOS_InvalidParameters;
@@ -182,7 +182,7 @@ static void mod_mark_deleted(PresenceModHandle* mod, const char* key) {
     }
 }
 
-EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_DeleteData(EOS_HPresenceModification Handle, const EOS_PresenceModification_DeleteDataOptions* Options) {
+EOS_DECLARE_FUNC(EOS_EResult) EOS_PresenceModification_DeleteData(EOS_HPresenceModification Handle, const EOS_PresenceModification_DeleteDataOptions* Options) { EOS_LOG_TRACE("ENTER");
     PresenceModHandle* mod = (PresenceModHandle*)Handle;
     if (!mod || mod->magic != 0x504D4F44) return EOS_InvalidParameters;
     if (!Options || !Options->Records) return EOS_InvalidParameters;
@@ -227,7 +227,7 @@ static void local_presence_delete(const char* key) {
     }
 }
 
-EOS_DECLARE_FUNC(void) EOS_Presence_SetPresence(EOS_HPresence Handle, const EOS_Presence_SetPresenceOptions* Options, void* ClientData, const EOS_Presence_SetPresenceCompleteCallback CompletionDelegate) {
+EOS_DECLARE_FUNC(void) EOS_Presence_SetPresence(EOS_HPresence Handle, const EOS_Presence_SetPresenceOptions* Options, void* ClientData, const EOS_Presence_SetPresenceCompleteCallback CompletionDelegate) { EOS_LOG_TRACE("ENTER");
     PlatformState* p = (PlatformState*)Handle;
     EOS_Presence_SetPresenceCallbackInfo info = {0};
     info.ResultCode = EOS_InvalidParameters;
@@ -269,7 +269,7 @@ EOS_DECLARE_FUNC(void) EOS_Presence_SetPresence(EOS_HPresence Handle, const EOS_
     }
 }
 
-EOS_DECLARE_FUNC(void) EOS_PresenceModification_Release(EOS_HPresenceModification Handle) {
+EOS_DECLARE_FUNC(void) EOS_PresenceModification_Release(EOS_HPresenceModification Handle) { EOS_LOG_TRACE("ENTER");
     PresenceModHandle* mod = (PresenceModHandle*)Handle;
     if (mod && mod->magic == 0x504D4F44) {
         mod->magic = 0;
@@ -709,7 +709,7 @@ void social_bridge_tick(PlatformState* p) {
     }
 }
 
-EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Friends_AddNotifyFriendsUpdate(EOS_HFriends Handle, const EOS_Friends_AddNotifyFriendsUpdateOptions* Options, void* ClientData, const EOS_Friends_OnFriendsUpdateCallback FriendsUpdateHandler) {
+EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Friends_AddNotifyFriendsUpdate(EOS_HFriends Handle, const EOS_Friends_AddNotifyFriendsUpdateOptions* Options, void* ClientData, const EOS_Friends_OnFriendsUpdateCallback FriendsUpdateHandler) { EOS_LOG_TRACE("ENTER");
     (void)Handle; (void)Options;
     g_friends_cb = FriendsUpdateHandler;
     g_friends_cd = ClientData;
@@ -718,12 +718,12 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Friends_AddNotifyFriendsUpdate(EOS_HFri
     return (EOS_NotificationId)0x1001;
 }
 
-EOS_DECLARE_FUNC(void) EOS_Friends_RemoveNotifyFriendsUpdate(EOS_HFriends Handle, EOS_NotificationId NotificationId) {
+EOS_DECLARE_FUNC(void) EOS_Friends_RemoveNotifyFriendsUpdate(EOS_HFriends Handle, EOS_NotificationId NotificationId) { EOS_LOG_TRACE("ENTER");
     (void)Handle; (void)NotificationId;
     g_friends_cb = NULL; g_friends_cd = NULL;
 }
 
-EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Presence_AddNotifyOnPresenceChanged(EOS_HPresence Handle, const EOS_Presence_AddNotifyOnPresenceChangedOptions* Options, void* ClientData, const EOS_Presence_OnPresenceChangedCallback NotificationHandler) {
+EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Presence_AddNotifyOnPresenceChanged(EOS_HPresence Handle, const EOS_Presence_AddNotifyOnPresenceChangedOptions* Options, void* ClientData, const EOS_Presence_OnPresenceChangedCallback NotificationHandler) { EOS_LOG_TRACE("ENTER");
     (void)Handle; (void)Options;
     g_presence_cb = NotificationHandler;
     g_presence_cd = ClientData;
@@ -732,14 +732,14 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Presence_AddNotifyOnPresenceChanged(EOS
     return (EOS_NotificationId)0x1002;
 }
 
-EOS_DECLARE_FUNC(void) EOS_Presence_RemoveNotifyOnPresenceChanged(EOS_HPresence Handle, EOS_NotificationId NotificationId) {
+EOS_DECLARE_FUNC(void) EOS_Presence_RemoveNotifyOnPresenceChanged(EOS_HPresence Handle, EOS_NotificationId NotificationId) { EOS_LOG_TRACE("ENTER");
     (void)Handle; (void)NotificationId;
     g_presence_cb = NULL; g_presence_cd = NULL;
 }
 
 // ===================== Friends =====================
 
-EOS_DECLARE_FUNC(void) EOS_Friends_QueryFriends(EOS_HFriends Handle, const EOS_Friends_QueryFriendsOptions* Options, void* ClientData, const EOS_Friends_OnQueryFriendsCallback CompletionDelegate) {
+EOS_DECLARE_FUNC(void) EOS_Friends_QueryFriends(EOS_HFriends Handle, const EOS_Friends_QueryFriendsOptions* Options, void* ClientData, const EOS_Friends_OnQueryFriendsCallback CompletionDelegate) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_INFO(">>> EOS_Friends_QueryFriends CALLED");
     PlatformState* p = (PlatformState*)Handle;
     refresh_peers(p);
@@ -752,7 +752,7 @@ EOS_DECLARE_FUNC(void) EOS_Friends_QueryFriends(EOS_HFriends Handle, const EOS_F
     }
 }
 
-EOS_DECLARE_FUNC(int32_t) EOS_Friends_GetFriendsCount(EOS_HFriends Handle, const EOS_Friends_GetFriendsCountOptions* Options) {
+EOS_DECLARE_FUNC(int32_t) EOS_Friends_GetFriendsCount(EOS_HFriends Handle, const EOS_Friends_GetFriendsCountOptions* Options) { EOS_LOG_TRACE("ENTER");
     (void)Options;
     PlatformState* p = (PlatformState*)Handle;
     refresh_peers(p);
@@ -760,7 +760,7 @@ EOS_DECLARE_FUNC(int32_t) EOS_Friends_GetFriendsCount(EOS_HFriends Handle, const
     return g_peer_count;
 }
 
-EOS_DECLARE_FUNC(EOS_EpicAccountId) EOS_Friends_GetFriendAtIndex(EOS_HFriends Handle, const EOS_Friends_GetFriendAtIndexOptions* Options) {
+EOS_DECLARE_FUNC(EOS_EpicAccountId) EOS_Friends_GetFriendAtIndex(EOS_HFriends Handle, const EOS_Friends_GetFriendAtIndexOptions* Options) { EOS_LOG_TRACE("ENTER");
     (void)Handle;
     if (!Options || Options->Index < 0 || Options->Index >= g_peer_count) {
         EOS_LOG_WARN("GetFriendAtIndex: index out of range");
@@ -775,7 +775,7 @@ EOS_DECLARE_FUNC(EOS_EpicAccountId) EOS_Friends_GetFriendAtIndex(EOS_HFriends Ha
     return EOS_EpicAccountId_FromString(g_peers[Options->Index].epic.id_string);
 }
 
-EOS_DECLARE_FUNC(EOS_EFriendsStatus) EOS_Friends_GetStatus(EOS_HFriends Handle, const EOS_Friends_GetStatusOptions* Options) {
+EOS_DECLARE_FUNC(EOS_EFriendsStatus) EOS_Friends_GetStatus(EOS_HFriends Handle, const EOS_Friends_GetStatusOptions* Options) { EOS_LOG_TRACE("ENTER");
     (void)Handle; (void)Options;
     // Every discovered peer is treated as an accepted friend so it shows up.
     return EOS_FS_Friends;
@@ -783,7 +783,7 @@ EOS_DECLARE_FUNC(EOS_EFriendsStatus) EOS_Friends_GetStatus(EOS_HFriends Handle, 
 
 // ===================== Presence =====================
 
-EOS_DECLARE_FUNC(void) EOS_Presence_QueryPresence(EOS_HPresence Handle, const EOS_Presence_QueryPresenceOptions* Options, void* ClientData, const EOS_Presence_OnQueryPresenceCompleteCallback CompletionDelegate) {
+EOS_DECLARE_FUNC(void) EOS_Presence_QueryPresence(EOS_HPresence Handle, const EOS_Presence_QueryPresenceOptions* Options, void* ClientData, const EOS_Presence_OnQueryPresenceCompleteCallback CompletionDelegate) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_INFO(">>> EOS_Presence_QueryPresence CALLED");
     PlatformState* p = (PlatformState*)Handle;
     refresh_peers(p);
@@ -797,13 +797,13 @@ EOS_DECLARE_FUNC(void) EOS_Presence_QueryPresence(EOS_HPresence Handle, const EO
     }
 }
 
-EOS_DECLARE_FUNC(EOS_Bool) EOS_Presence_HasPresence(EOS_HPresence Handle, const EOS_Presence_HasPresenceOptions* Options) {
+EOS_DECLARE_FUNC(EOS_Bool) EOS_Presence_HasPresence(EOS_HPresence Handle, const EOS_Presence_HasPresenceOptions* Options) { EOS_LOG_TRACE("ENTER");
     (void)Handle;
     EOS_EpicAccountId target = Options ? Options->TargetUserId : NULL;
     return find_peer_by_epic(target) ? EOS_TRUE : EOS_FALSE;
 }
 
-EOS_DECLARE_FUNC(EOS_EResult) EOS_Presence_CopyPresence(EOS_HPresence Handle, const EOS_Presence_CopyPresenceOptions* Options, EOS_Presence_Info** OutPresence) {
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Presence_CopyPresence(EOS_HPresence Handle, const EOS_Presence_CopyPresenceOptions* Options, EOS_Presence_Info** OutPresence) { EOS_LOG_TRACE("ENTER");
     PlatformState* plat = (PlatformState*)Handle;
     if (!OutPresence) return EOS_InvalidParameters;
     *OutPresence = NULL;
@@ -856,11 +856,11 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Presence_CopyPresence(EOS_HPresence Handle, co
     return EOS_Success;
 }
 
-EOS_DECLARE_FUNC(void) EOS_Presence_Info_Release(EOS_Presence_Info* PresenceInfo) {
+EOS_DECLARE_FUNC(void) EOS_Presence_Info_Release(EOS_Presence_Info* PresenceInfo) { EOS_LOG_TRACE("ENTER");
     if (PresenceInfo) free(PresenceInfo);  // Info is first member of the block
 }
 
-EOS_DECLARE_FUNC(EOS_EResult) EOS_Presence_GetJoinInfo(EOS_HPresence Handle, const EOS_Presence_GetJoinInfoOptions* Options, char* OutBuffer, int32_t* InOutBufferLength) {
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Presence_GetJoinInfo(EOS_HPresence Handle, const EOS_Presence_GetJoinInfoOptions* Options, char* OutBuffer, int32_t* InOutBufferLength) { EOS_LOG_TRACE("ENTER");
     (void)Handle;
     if (!OutBuffer || !InOutBufferLength) return EOS_InvalidParameters;
     EOS_EpicAccountId target = Options ? Options->TargetUserId : NULL;
@@ -907,7 +907,7 @@ const char* social_bridge_display_name_for(EOS_EpicAccountId id) {
     return "LAN_Player";
 }
 
-EOS_DECLARE_FUNC(void) EOS_UserInfo_QueryUserInfo(EOS_HUserInfo Handle, const EOS_UserInfo_QueryUserInfoOptions* Options, void* ClientData, const EOS_UserInfo_OnQueryUserInfoCallback CompletionDelegate) {
+EOS_DECLARE_FUNC(void) EOS_UserInfo_QueryUserInfo(EOS_HUserInfo Handle, const EOS_UserInfo_QueryUserInfoOptions* Options, void* ClientData, const EOS_UserInfo_OnQueryUserInfoCallback CompletionDelegate) { EOS_LOG_TRACE("ENTER");
     PlatformState* p = (PlatformState*)Handle;
     EOS_UserInfo_QueryUserInfoCallbackInfo info = {0};
     info.ResultCode = EOS_Success;
@@ -920,7 +920,7 @@ EOS_DECLARE_FUNC(void) EOS_UserInfo_QueryUserInfo(EOS_HUserInfo Handle, const EO
     }
 }
 
-EOS_DECLARE_FUNC(void) EOS_UserInfo_QueryUserInfoByDisplayName(EOS_HUserInfo Handle, const EOS_UserInfo_QueryUserInfoByDisplayNameOptions* Options, void* ClientData, const EOS_UserInfo_OnQueryUserInfoByDisplayNameCallback CompletionDelegate) {
+EOS_DECLARE_FUNC(void) EOS_UserInfo_QueryUserInfoByDisplayName(EOS_HUserInfo Handle, const EOS_UserInfo_QueryUserInfoByDisplayNameOptions* Options, void* ClientData, const EOS_UserInfo_OnQueryUserInfoByDisplayNameCallback CompletionDelegate) { EOS_LOG_TRACE("ENTER");
     PlatformState* p = (PlatformState*)Handle;
     EOS_UserInfo_QueryUserInfoByDisplayNameCallbackInfo info = {0};
     info.ResultCode = EOS_NotFound;
@@ -932,7 +932,7 @@ EOS_DECLARE_FUNC(void) EOS_UserInfo_QueryUserInfoByDisplayName(EOS_HUserInfo Han
     }
 }
 
-EOS_DECLARE_FUNC(EOS_EResult) EOS_UserInfo_CopyUserInfo(EOS_HUserInfo Handle, const EOS_UserInfo_CopyUserInfoOptions* Options, EOS_UserInfo** OutUserInfo) {
+EOS_DECLARE_FUNC(EOS_EResult) EOS_UserInfo_CopyUserInfo(EOS_HUserInfo Handle, const EOS_UserInfo_CopyUserInfoOptions* Options, EOS_UserInfo** OutUserInfo) { EOS_LOG_TRACE("ENTER");
     (void)Handle;
     if (!OutUserInfo) return EOS_InvalidParameters;
     *OutUserInfo = NULL;
@@ -959,6 +959,6 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_UserInfo_CopyUserInfo(EOS_HUserInfo Handle, co
     return EOS_Success;
 }
 
-EOS_DECLARE_FUNC(void) EOS_UserInfo_Release(EOS_UserInfo* UserInfo) {
+EOS_DECLARE_FUNC(void) EOS_UserInfo_Release(EOS_UserInfo* UserInfo) { EOS_LOG_TRACE("ENTER");
     if (UserInfo) free(UserInfo);  // info is first member of the block
 }

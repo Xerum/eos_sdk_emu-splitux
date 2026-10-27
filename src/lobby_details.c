@@ -127,7 +127,7 @@ static const LobbyMember* find_member(const Lobby* lobby, EOS_ProductUserId user
 EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_LobbyDetails_GetLobbyOwner(
     EOS_HLobbyDetails Handle,
     const EOS_LobbyDetails_GetLobbyOwnerOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyDetailsHandle* details = (LobbyDetailsHandle*)Handle;
 
     if (!details || details->magic != LOBBY_DETAILS_MAGIC) {
@@ -145,7 +145,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyInfo(
     EOS_HLobbyDetails Handle,
     const EOS_LobbyDetails_CopyInfoOptions* Options,
     EOS_LobbyDetails_Info** OutLobbyDetailsInfo
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyDetailsHandle* details = (LobbyDetailsHandle*)Handle;
 
     if (!details || details->magic != LOBBY_DETAILS_MAGIC) {
@@ -172,7 +172,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyInfo(
 EOS_DECLARE_FUNC(uint32_t) EOS_LobbyDetails_GetAttributeCount(
     EOS_HLobbyDetails Handle,
     const EOS_LobbyDetails_GetAttributeCountOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyDetailsHandle* details = (LobbyDetailsHandle*)Handle;
 
     if (!details || details->magic != LOBBY_DETAILS_MAGIC) {
@@ -190,7 +190,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyAttributeByIndex(
     EOS_HLobbyDetails Handle,
     const EOS_LobbyDetails_CopyAttributeByIndexOptions* Options,
     EOS_Lobby_Attribute** OutAttribute
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyDetailsHandle* details = (LobbyDetailsHandle*)Handle;
 
     if (!details || details->magic != LOBBY_DETAILS_MAGIC) {
@@ -217,7 +217,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyAttributeByKey(
     EOS_HLobbyDetails Handle,
     const EOS_LobbyDetails_CopyAttributeByKeyOptions* Options,
     EOS_Lobby_Attribute** OutAttribute
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyDetailsHandle* details = (LobbyDetailsHandle*)Handle;
 
     if (!details || details->magic != LOBBY_DETAILS_MAGIC) {
@@ -244,7 +244,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyAttributeByKey(
 EOS_DECLARE_FUNC(uint32_t) EOS_LobbyDetails_GetMemberCount(
     EOS_HLobbyDetails Handle,
     const EOS_LobbyDetails_GetMemberCountOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyDetailsHandle* details = (LobbyDetailsHandle*)Handle;
 
     if (!details || details->magic != LOBBY_DETAILS_MAGIC) {
@@ -261,7 +261,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_LobbyDetails_GetMemberCount(
 EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_LobbyDetails_GetMemberByIndex(
     EOS_HLobbyDetails Handle,
     const EOS_LobbyDetails_GetMemberByIndexOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyDetailsHandle* details = (LobbyDetailsHandle*)Handle;
 
     if (!details || details->magic != LOBBY_DETAILS_MAGIC) {
@@ -285,7 +285,7 @@ EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_LobbyDetails_GetMemberByIndex(
 EOS_DECLARE_FUNC(uint32_t) EOS_LobbyDetails_GetMemberAttributeCount(
     EOS_HLobbyDetails Handle,
     const EOS_LobbyDetails_GetMemberAttributeCountOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyDetailsHandle* details = (LobbyDetailsHandle*)Handle;
 
     if (!details || details->magic != LOBBY_DETAILS_MAGIC) {
@@ -308,7 +308,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyMemberAttributeByIndex(
     EOS_HLobbyDetails Handle,
     const EOS_LobbyDetails_CopyMemberAttributeByIndexOptions* Options,
     EOS_Lobby_Attribute** OutAttribute
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyDetailsHandle* details = (LobbyDetailsHandle*)Handle;
 
     if (!details || details->magic != LOBBY_DETAILS_MAGIC) {
@@ -339,7 +339,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyMemberAttributeByKey(
     EOS_HLobbyDetails Handle,
     const EOS_LobbyDetails_CopyMemberAttributeByKeyOptions* Options,
     EOS_Lobby_Attribute** OutAttribute
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyDetailsHandle* details = (LobbyDetailsHandle*)Handle;
 
     if (!details || details->magic != LOBBY_DETAILS_MAGIC) {
@@ -368,7 +368,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyMemberAttributeByKey(
     return EOS_NotFound;
 }
 
-EOS_DECLARE_FUNC(void) EOS_LobbyDetails_Release(EOS_HLobbyDetails LobbyHandle) {
+EOS_DECLARE_FUNC(void) EOS_LobbyDetails_Release(EOS_HLobbyDetails LobbyHandle) { EOS_LOG_TRACE("ENTER");
     LobbyDetailsHandle* details = (LobbyDetailsHandle*)LobbyHandle;
 
     if (details && details->magic == LOBBY_DETAILS_MAGIC) {
@@ -377,7 +377,7 @@ EOS_DECLARE_FUNC(void) EOS_LobbyDetails_Release(EOS_HLobbyDetails LobbyHandle) {
     }
 }
 
-EOS_DECLARE_FUNC(void) EOS_LobbyDetails_Info_Release(EOS_LobbyDetails_Info* LobbyDetailsInfo) {
+EOS_DECLARE_FUNC(void) EOS_LobbyDetails_Info_Release(EOS_LobbyDetails_Info* LobbyDetailsInfo) { EOS_LOG_TRACE("ENTER");
     if (!LobbyDetailsInfo) {
         return;
     }
@@ -395,7 +395,7 @@ EOS_DECLARE_FUNC(void) EOS_LobbyDetails_Info_Release(EOS_LobbyDetails_Info* Lobb
     free(LobbyDetailsInfo);
 }
 
-EOS_DECLARE_FUNC(void) EOS_Lobby_Attribute_Release(EOS_Lobby_Attribute* LobbyAttribute) {
+EOS_DECLARE_FUNC(void) EOS_Lobby_Attribute_Release(EOS_Lobby_Attribute* LobbyAttribute) { EOS_LOG_TRACE("ENTER");
     if (!LobbyAttribute) {
         return;
     }

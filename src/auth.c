@@ -144,7 +144,7 @@ bool auth_external_disabled(void) {
     return v && strcmp(v, "fail") == 0;
 }
 
-EOS_DECLARE_FUNC(void) EOS_Auth_Login(EOS_HAuth Handle, const EOS_Auth_LoginOptions* Options, void* ClientData, const EOS_Auth_OnLoginCallback CompletionDelegate) {
+EOS_DECLARE_FUNC(void) EOS_Auth_Login(EOS_HAuth Handle, const EOS_Auth_LoginOptions* Options, void* ClientData, const EOS_Auth_OnLoginCallback CompletionDelegate) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_INFO(">>> EOS_Auth_Login CALLED <<<");
     EOS_LOG_INFO("    Handle=%p, Options=%p, ClientData=%p, Callback=%p",
                  (void*)Handle, (void*)Options, ClientData, (void*)CompletionDelegate);
@@ -200,7 +200,7 @@ EOS_DECLARE_FUNC(void) EOS_Auth_Login(EOS_HAuth Handle, const EOS_Auth_LoginOpti
     }
 }
 
-EOS_DECLARE_FUNC(void) EOS_Auth_Logout(EOS_HAuth Handle, const EOS_Auth_LogoutOptions* Options, void* ClientData, const EOS_Auth_OnLogoutCallback CompletionDelegate) {
+EOS_DECLARE_FUNC(void) EOS_Auth_Logout(EOS_HAuth Handle, const EOS_Auth_LogoutOptions* Options, void* ClientData, const EOS_Auth_OnLogoutCallback CompletionDelegate) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_INFO("Auth_Logout called");
     g_auth_state.logged_in = false;
 
@@ -213,7 +213,7 @@ EOS_DECLARE_FUNC(void) EOS_Auth_Logout(EOS_HAuth Handle, const EOS_Auth_LogoutOp
     }
 }
 
-EOS_DECLARE_FUNC(void) EOS_Auth_LinkAccount(EOS_HAuth Handle, const EOS_Auth_LinkAccountOptions* Options, void* ClientData, const EOS_Auth_OnLinkAccountCallback CompletionDelegate) {
+EOS_DECLARE_FUNC(void) EOS_Auth_LinkAccount(EOS_HAuth Handle, const EOS_Auth_LinkAccountOptions* Options, void* ClientData, const EOS_Auth_OnLinkAccountCallback CompletionDelegate) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_INFO(">>> EOS_Auth_LinkAccount CALLED");
     if (CompletionDelegate) {
         EOS_Auth_LinkAccountCallbackInfo info = {0};
@@ -224,7 +224,7 @@ EOS_DECLARE_FUNC(void) EOS_Auth_LinkAccount(EOS_HAuth Handle, const EOS_Auth_Lin
     }
 }
 
-EOS_DECLARE_FUNC(void) EOS_Auth_DeletePersistentAuth(EOS_HAuth Handle, const EOS_Auth_DeletePersistentAuthOptions* Options, void* ClientData, const EOS_Auth_OnDeletePersistentAuthCallback CompletionDelegate) {
+EOS_DECLARE_FUNC(void) EOS_Auth_DeletePersistentAuth(EOS_HAuth Handle, const EOS_Auth_DeletePersistentAuthOptions* Options, void* ClientData, const EOS_Auth_OnDeletePersistentAuthCallback CompletionDelegate) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_INFO(">>> EOS_Auth_DeletePersistentAuth CALLED");
     if (CompletionDelegate) {
         EOS_Auth_DeletePersistentAuthCallbackInfo info = {0};
@@ -234,7 +234,7 @@ EOS_DECLARE_FUNC(void) EOS_Auth_DeletePersistentAuth(EOS_HAuth Handle, const EOS
     }
 }
 
-EOS_DECLARE_FUNC(void) EOS_Auth_VerifyUserAuth(EOS_HAuth Handle, const EOS_Auth_VerifyUserAuthOptions* Options, void* ClientData, const EOS_Auth_OnVerifyUserAuthCallback CompletionDelegate) {
+EOS_DECLARE_FUNC(void) EOS_Auth_VerifyUserAuth(EOS_HAuth Handle, const EOS_Auth_VerifyUserAuthOptions* Options, void* ClientData, const EOS_Auth_OnVerifyUserAuthCallback CompletionDelegate) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_INFO(">>> EOS_Auth_VerifyUserAuth CALLED");
     if (CompletionDelegate) {
         EOS_Auth_VerifyUserAuthCallbackInfo info = {0};
@@ -244,14 +244,14 @@ EOS_DECLARE_FUNC(void) EOS_Auth_VerifyUserAuth(EOS_HAuth Handle, const EOS_Auth_
     }
 }
 
-EOS_DECLARE_FUNC(int32_t) EOS_Auth_GetLoggedInAccountsCount(EOS_HAuth Handle) {
+EOS_DECLARE_FUNC(int32_t) EOS_Auth_GetLoggedInAccountsCount(EOS_HAuth Handle) { EOS_LOG_TRACE("ENTER");
     int32_t count = g_auth_state.logged_in ? 1 : 0;
     EOS_LOG_INFO(">>> Auth_GetLoggedInAccountsCount CALLED - returning %d (logged_in=%d)",
                  count, g_auth_state.logged_in);
     return count;
 }
 
-EOS_DECLARE_FUNC(EOS_EpicAccountId) EOS_Auth_GetLoggedInAccountByIndex(EOS_HAuth Handle, int32_t Index) {
+EOS_DECLARE_FUNC(EOS_EpicAccountId) EOS_Auth_GetLoggedInAccountByIndex(EOS_HAuth Handle, int32_t Index) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_INFO(">>> Auth_GetLoggedInAccountByIndex(%d) CALLED - returning account_id=%s",
                  Index, g_auth_state.account_id.id_string);
     if (Index != 0) {
@@ -265,7 +265,7 @@ EOS_DECLARE_FUNC(EOS_EpicAccountId) EOS_Auth_GetLoggedInAccountByIndex(EOS_HAuth
     return (EOS_EpicAccountId)&g_auth_state.account_id;
 }
 
-EOS_DECLARE_FUNC(EOS_ELoginStatus) EOS_Auth_GetLoginStatus(EOS_HAuth Handle, EOS_EpicAccountId LocalUserId) {
+EOS_DECLARE_FUNC(EOS_ELoginStatus) EOS_Auth_GetLoginStatus(EOS_HAuth Handle, EOS_EpicAccountId LocalUserId) { EOS_LOG_TRACE("ENTER");
     EOS_ELoginStatus status = g_auth_state.logged_in ? EOS_LS_LoggedIn : EOS_LS_NotLoggedIn;
     EOS_LOG_TRACE(">>> Auth_GetLoginStatus CALLED - LocalUserId=%p, logged_in=%d, returning %s",
                  (void*)LocalUserId, g_auth_state.logged_in,
@@ -273,7 +273,7 @@ EOS_DECLARE_FUNC(EOS_ELoginStatus) EOS_Auth_GetLoginStatus(EOS_HAuth Handle, EOS
     return status;
 }
 
-EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthToken(EOS_HAuth Handle, const EOS_Auth_CopyUserAuthTokenOptions* Options, EOS_EpicAccountId LocalUserId, EOS_Auth_Token** OutUserAuthToken) {
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthToken(EOS_HAuth Handle, const EOS_Auth_CopyUserAuthTokenOptions* Options, EOS_EpicAccountId LocalUserId, EOS_Auth_Token** OutUserAuthToken) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_INFO(">>> EOS_Auth_CopyUserAuthToken CALLED - logged_in=%d", g_auth_state.logged_in);
 
     if (!OutUserAuthToken) {
@@ -309,7 +309,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyUserAuthToken(EOS_HAuth Handle, const
     return EOS_Success;
 }
 
-EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyIdToken(EOS_HAuth Handle, const EOS_Auth_CopyIdTokenOptions* Options, EOS_Auth_IdToken** OutIdToken) {
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyIdToken(EOS_HAuth Handle, const EOS_Auth_CopyIdTokenOptions* Options, EOS_Auth_IdToken** OutIdToken) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_INFO(">>> EOS_Auth_CopyIdToken CALLED - logged_in=%d", g_auth_state.logged_in);
     (void)Handle; (void)Options;
     if (!OutIdToken) {
@@ -346,21 +346,21 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_CopyIdToken(EOS_HAuth Handle, const EOS_A
     return EOS_Success;
 }
 
-EOS_DECLARE_FUNC(void) EOS_Auth_Token_Release(EOS_Auth_Token* AuthToken) {
+EOS_DECLARE_FUNC(void) EOS_Auth_Token_Release(EOS_Auth_Token* AuthToken) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_INFO(">>> EOS_Auth_Token_Release CALLED");
     if (AuthToken) {
         free(AuthToken);
     }
 }
 
-EOS_DECLARE_FUNC(void) EOS_Auth_IdToken_Release(EOS_Auth_IdToken* IdToken) {
+EOS_DECLARE_FUNC(void) EOS_Auth_IdToken_Release(EOS_Auth_IdToken* IdToken) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_INFO(">>> EOS_Auth_IdToken_Release CALLED");
     if (IdToken) {
         free(IdToken);
     }
 }
 
-EOS_DECLARE_FUNC(void) EOS_Auth_QueryIdToken(EOS_HAuth Handle, const EOS_Auth_QueryIdTokenOptions* Options, void* ClientData, const EOS_Auth_OnQueryIdTokenCallback CompletionDelegate) {
+EOS_DECLARE_FUNC(void) EOS_Auth_QueryIdToken(EOS_HAuth Handle, const EOS_Auth_QueryIdTokenOptions* Options, void* ClientData, const EOS_Auth_OnQueryIdTokenCallback CompletionDelegate) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_INFO(">>> EOS_Auth_QueryIdToken CALLED");
     if (CompletionDelegate) {
         EOS_Auth_QueryIdTokenCallbackInfo info = {0};
@@ -371,7 +371,7 @@ EOS_DECLARE_FUNC(void) EOS_Auth_QueryIdToken(EOS_HAuth Handle, const EOS_Auth_Qu
     }
 }
 
-EOS_DECLARE_FUNC(void) EOS_Auth_VerifyIdToken(EOS_HAuth Handle, const EOS_Auth_VerifyIdTokenOptions* Options, void* ClientData, const EOS_Auth_OnVerifyIdTokenCallback CompletionDelegate) {
+EOS_DECLARE_FUNC(void) EOS_Auth_VerifyIdToken(EOS_HAuth Handle, const EOS_Auth_VerifyIdTokenOptions* Options, void* ClientData, const EOS_Auth_OnVerifyIdTokenCallback CompletionDelegate) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_INFO(">>> EOS_Auth_VerifyIdToken CALLED");
     if (CompletionDelegate) {
         EOS_Auth_VerifyIdTokenCallbackInfo info = {0};
@@ -381,7 +381,7 @@ EOS_DECLARE_FUNC(void) EOS_Auth_VerifyIdToken(EOS_HAuth Handle, const EOS_Auth_V
     }
 }
 
-EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_GetSelectedAccountId(EOS_HAuth Handle, const EOS_EpicAccountId LocalUserId, EOS_EpicAccountId* OutSelectedAccountId) {
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_GetSelectedAccountId(EOS_HAuth Handle, const EOS_EpicAccountId LocalUserId, EOS_EpicAccountId* OutSelectedAccountId) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_INFO(">>> EOS_Auth_GetSelectedAccountId CALLED - returning account");
     if (OutSelectedAccountId) {
         *OutSelectedAccountId = g_auth_state.logged_in ? (EOS_EpicAccountId)&g_auth_state.account_id : NULL;
@@ -389,17 +389,17 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Auth_GetSelectedAccountId(EOS_HAuth Handle, co
     return g_auth_state.logged_in ? EOS_Success : EOS_NotFound;
 }
 
-EOS_DECLARE_FUNC(uint32_t) EOS_Auth_GetMergedAccountsCount(EOS_HAuth Handle, const EOS_EpicAccountId LocalUserId) {
+EOS_DECLARE_FUNC(uint32_t) EOS_Auth_GetMergedAccountsCount(EOS_HAuth Handle, const EOS_EpicAccountId LocalUserId) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_INFO(">>> EOS_Auth_GetMergedAccountsCount CALLED");
     return 0;
 }
 
-EOS_DECLARE_FUNC(EOS_EpicAccountId) EOS_Auth_GetMergedAccountByIndex(EOS_HAuth Handle, const EOS_EpicAccountId LocalUserId, const uint32_t Index) {
+EOS_DECLARE_FUNC(EOS_EpicAccountId) EOS_Auth_GetMergedAccountByIndex(EOS_HAuth Handle, const EOS_EpicAccountId LocalUserId, const uint32_t Index) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_INFO(">>> EOS_Auth_GetMergedAccountByIndex CALLED");
     return NULL;
 }
 
-EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Auth_AddNotifyLoginStatusChanged(EOS_HAuth Handle, const EOS_Auth_AddNotifyLoginStatusChangedOptions* Options, void* ClientData, const EOS_Auth_OnLoginStatusChangedCallback Notification) {
+EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Auth_AddNotifyLoginStatusChanged(EOS_HAuth Handle, const EOS_Auth_AddNotifyLoginStatusChangedOptions* Options, void* ClientData, const EOS_Auth_OnLoginStatusChangedCallback Notification) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_INFO(">>> EOS_Auth_AddNotifyLoginStatusChanged CALLED <<<");
     EOS_LOG_INFO("    Handle=%p, Options=%p, ClientData=%p, Callback=%p",
                  (void*)Handle, (void*)Options, ClientData, (void*)Notification);
@@ -490,6 +490,6 @@ void auth_fire_login_notifications(EOS_ELoginStatus prev, EOS_ELoginStatus curre
     EOS_LOG_INFO("    Total callbacks queued: %d", queued);
 }
 
-EOS_DECLARE_FUNC(void) EOS_Auth_RemoveNotifyLoginStatusChanged(EOS_HAuth Handle, EOS_NotificationId InId) {
+EOS_DECLARE_FUNC(void) EOS_Auth_RemoveNotifyLoginStatusChanged(EOS_HAuth Handle, EOS_NotificationId InId) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_INFO(">>> EOS_Auth_RemoveNotifyLoginStatusChanged CALLED");
 }

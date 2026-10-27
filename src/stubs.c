@@ -26,37 +26,37 @@
 // Platform Management Stubs (remaining functions not in platform.c)
 // ============================================================================
 
-EOS_DECLARE_FUNC(EOS_HMetrics) EOS_Platform_GetMetricsInterface(EOS_HPlatform Handle) {
+EOS_DECLARE_FUNC(EOS_HMetrics) EOS_Platform_GetMetricsInterface(EOS_HPlatform Handle) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
     return (EOS_HMetrics)Handle;
 }
 
-EOS_DECLARE_FUNC(EOS_HFriends) EOS_Platform_GetFriendsInterface(EOS_HPlatform Handle) {
+EOS_DECLARE_FUNC(EOS_HFriends) EOS_Platform_GetFriendsInterface(EOS_HPlatform Handle) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
     return (EOS_HFriends)Handle;
 }
 
-EOS_DECLARE_FUNC(EOS_HPresence) EOS_Platform_GetPresenceInterface(EOS_HPlatform Handle) {
+EOS_DECLARE_FUNC(EOS_HPresence) EOS_Platform_GetPresenceInterface(EOS_HPlatform Handle) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
     return (EOS_HPresence)Handle;
 }
 
-EOS_DECLARE_FUNC(EOS_HUserInfo) EOS_Platform_GetUserInfoInterface(EOS_HPlatform Handle) {
+EOS_DECLARE_FUNC(EOS_HUserInfo) EOS_Platform_GetUserInfoInterface(EOS_HPlatform Handle) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
     return (EOS_HUserInfo)Handle;
 }
 
-EOS_DECLARE_FUNC(EOS_HEcom) EOS_Platform_GetEcomInterface(EOS_HPlatform Handle) {
+EOS_DECLARE_FUNC(EOS_HEcom) EOS_Platform_GetEcomInterface(EOS_HPlatform Handle) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
     return (EOS_HEcom)Handle;
 }
 
-EOS_DECLARE_FUNC(EOS_HUI) EOS_Platform_GetUIInterface(EOS_HPlatform Handle) {
+EOS_DECLARE_FUNC(EOS_HUI) EOS_Platform_GetUIInterface(EOS_HPlatform Handle) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
     return (EOS_HUI)Handle;
 }
 
-EOS_DECLARE_FUNC(EOS_EResult) EOS_Platform_CheckForLauncherAndRestart(EOS_HPlatform Handle) {
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Platform_CheckForLauncherAndRestart(EOS_HPlatform Handle) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
     EOS_LOG_API_RETURN(EOS_Success);
 }

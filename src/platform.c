@@ -20,7 +20,7 @@ PlatformState* g_platforms[8] = {NULL};
 static char g_product_name[128] = {0};
 static char g_product_version[64] = {0};
 
-EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Options) {
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Options) { EOS_LOG_TRACE("ENTER");
     if (!Options || Options->ApiVersion < EOS_INITIALIZE_API_LATEST) {
         return EOS_InvalidParameters;
     }
@@ -45,7 +45,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
     return EOS_Success;
 }
 
-EOS_DECLARE_FUNC(EOS_EResult) EOS_Shutdown() {
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Shutdown() { EOS_LOG_TRACE("ENTER");
     if (!g_sdk_initialized) {
         return EOS_NotConfigured;
     }
@@ -123,7 +123,7 @@ static void parse_lan_env_vars(PlatformState* platform) {
     }
 }
 
-EOS_DECLARE_FUNC(EOS_HPlatform) EOS_Platform_Create(const EOS_Platform_Options* Options) {
+EOS_DECLARE_FUNC(EOS_HPlatform) EOS_Platform_Create(const EOS_Platform_Options* Options) { EOS_LOG_TRACE("ENTER");
     if (!g_sdk_initialized || !Options) {
         return NULL;
     }
@@ -214,7 +214,7 @@ EOS_DECLARE_FUNC(EOS_HPlatform) EOS_Platform_Create(const EOS_Platform_Options* 
     return (EOS_HPlatform)platform;
 }
 
-EOS_DECLARE_FUNC(void) EOS_Platform_Release(EOS_HPlatform Handle) {
+EOS_DECLARE_FUNC(void) EOS_Platform_Release(EOS_HPlatform Handle) { EOS_LOG_TRACE("ENTER");
     PlatformState* platform = (PlatformState*)Handle;
     if (!platform) return;
 
@@ -256,7 +256,7 @@ EOS_DECLARE_FUNC(void) EOS_Platform_Release(EOS_HPlatform Handle) {
     EOS_LOG_INFO("Platform released");
 }
 
-EOS_DECLARE_FUNC(void) EOS_Platform_Tick(EOS_HPlatform Handle) {
+EOS_DECLARE_FUNC(void) EOS_Platform_Tick(EOS_HPlatform Handle) { EOS_LOG_TRACE("ENTER");
     PlatformState* platform = (PlatformState*)Handle;
     if (!platform || !platform->callbacks) {
         if (!platform) EOS_LOG_ERROR("Platform_Tick: platform is NULL!");
@@ -287,7 +287,7 @@ EOS_DECLARE_FUNC(void) EOS_Platform_Tick(EOS_HPlatform Handle) {
 }
 
 // Platform interface getters
-EOS_DECLARE_FUNC(EOS_HConnect) EOS_Platform_GetConnectInterface(EOS_HPlatform Handle) {
+EOS_DECLARE_FUNC(EOS_HConnect) EOS_Platform_GetConnectInterface(EOS_HPlatform Handle) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
     PlatformState* platform = (PlatformState*)Handle;
     if (!platform) {
@@ -297,7 +297,7 @@ EOS_DECLARE_FUNC(EOS_HConnect) EOS_Platform_GetConnectInterface(EOS_HPlatform Ha
     return (EOS_HConnect)platform->connect;
 }
 
-EOS_DECLARE_FUNC(EOS_HSessions) EOS_Platform_GetSessionsInterface(EOS_HPlatform Handle) {
+EOS_DECLARE_FUNC(EOS_HSessions) EOS_Platform_GetSessionsInterface(EOS_HPlatform Handle) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
     PlatformState* platform = (PlatformState*)Handle;
     if (!platform) {
@@ -307,7 +307,7 @@ EOS_DECLARE_FUNC(EOS_HSessions) EOS_Platform_GetSessionsInterface(EOS_HPlatform 
     return (EOS_HSessions)platform->sessions;
 }
 
-EOS_DECLARE_FUNC(EOS_HP2P) EOS_Platform_GetP2PInterface(EOS_HPlatform Handle) {
+EOS_DECLARE_FUNC(EOS_HP2P) EOS_Platform_GetP2PInterface(EOS_HPlatform Handle) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
     PlatformState* platform = (PlatformState*)Handle;
     if (!platform) {
@@ -317,13 +317,13 @@ EOS_DECLARE_FUNC(EOS_HP2P) EOS_Platform_GetP2PInterface(EOS_HPlatform Handle) {
     return (EOS_HP2P)platform->p2p;
 }
 
-EOS_DECLARE_FUNC(EOS_HAuth) EOS_Platform_GetAuthInterface(EOS_HPlatform Handle) {
+EOS_DECLARE_FUNC(EOS_HAuth) EOS_Platform_GetAuthInterface(EOS_HPlatform Handle) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
     return (EOS_HAuth)Handle;
 }
 
 // Status functions
-EOS_DECLARE_FUNC(EOS_EResult) EOS_Platform_SetNetworkStatus(EOS_HPlatform Handle, EOS_ENetworkStatus Status) {
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Platform_SetNetworkStatus(EOS_HPlatform Handle, EOS_ENetworkStatus Status) { EOS_LOG_TRACE("ENTER");
     PlatformState* platform = (PlatformState*)Handle;
     if (!platform) return EOS_InvalidParameters;
 
@@ -332,14 +332,14 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Platform_SetNetworkStatus(EOS_HPlatform Handle
     return EOS_Success;
 }
 
-EOS_DECLARE_FUNC(EOS_ENetworkStatus) EOS_Platform_GetNetworkStatus(EOS_HPlatform Handle) {
+EOS_DECLARE_FUNC(EOS_ENetworkStatus) EOS_Platform_GetNetworkStatus(EOS_HPlatform Handle) { EOS_LOG_TRACE("ENTER");
     PlatformState* platform = (PlatformState*)Handle;
     if (!platform) return EOS_NS_Disabled;
 
     return platform->network_status;
 }
 
-EOS_DECLARE_FUNC(EOS_EResult) EOS_Platform_SetApplicationStatus(EOS_HPlatform Handle, EOS_EApplicationStatus Status) {
+EOS_DECLARE_FUNC(EOS_EResult) EOS_Platform_SetApplicationStatus(EOS_HPlatform Handle, EOS_EApplicationStatus Status) { EOS_LOG_TRACE("ENTER");
     PlatformState* platform = (PlatformState*)Handle;
     if (!platform) return EOS_InvalidParameters;
 
@@ -348,7 +348,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Platform_SetApplicationStatus(EOS_HPlatform Ha
     return EOS_Success;
 }
 
-EOS_DECLARE_FUNC(EOS_EApplicationStatus) EOS_Platform_GetApplicationStatus(EOS_HPlatform Handle) {
+EOS_DECLARE_FUNC(EOS_EApplicationStatus) EOS_Platform_GetApplicationStatus(EOS_HPlatform Handle) { EOS_LOG_TRACE("ENTER");
     PlatformState* platform = (PlatformState*)Handle;
     if (!platform) return EOS_AS_BackgroundSuspended;
 
@@ -356,7 +356,7 @@ EOS_DECLARE_FUNC(EOS_EApplicationStatus) EOS_Platform_GetApplicationStatus(EOS_H
 }
 
 // Utility function to convert EOS_EResult to string
-EOS_DECLARE_FUNC(const char*) EOS_EResult_ToString(EOS_EResult Result) {
+EOS_DECLARE_FUNC(const char*) EOS_EResult_ToString(EOS_EResult Result) { EOS_LOG_TRACE("ENTER");
     switch (Result) {
         case EOS_Success: return "EOS_Success";
         case EOS_NoConnection: return "EOS_NoConnection";

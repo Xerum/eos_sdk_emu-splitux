@@ -185,7 +185,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_Login(
     const EOS_Connect_LoginOptions* Options,
     void* ClientData,
     const EOS_Connect_OnLoginCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_INFO("Connect_Login CALLED!");
 
     ConnectState* state = (ConnectState*)Handle;
@@ -315,7 +315,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_Logout(
     const EOS_Connect_LogoutOptions* Options,
     void* ClientData,
     const EOS_Connect_OnLogoutCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
 
     ConnectState* state = (ConnectState*)Handle;
@@ -372,7 +372,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_CreateUser(
     const EOS_Connect_CreateUserOptions* Options,
     void* ClientData,
     const EOS_Connect_OnCreateUserCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
 
     // For LAN emulator, CreateUser is the same as Login
@@ -450,7 +450,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_CreateUser(
 // User Query Functions
 // ============================================================================
 
-EOS_DECLARE_FUNC(int32_t) EOS_Connect_GetLoggedInUsersCount(EOS_HConnect Handle) {
+EOS_DECLARE_FUNC(int32_t) EOS_Connect_GetLoggedInUsersCount(EOS_HConnect Handle) { EOS_LOG_TRACE("ENTER");
     ConnectState* state = (ConnectState*)Handle;
     if (!state || state->magic != CONNECT_MAGIC) {
         EOS_LOG_ERROR("Connect_GetLoggedInUsersCount: Invalid Connect handle");
@@ -461,7 +461,7 @@ EOS_DECLARE_FUNC(int32_t) EOS_Connect_GetLoggedInUsersCount(EOS_HConnect Handle)
     return state->user_count;
 }
 
-EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_Connect_GetLoggedInUserByIndex(EOS_HConnect Handle, int32_t Index) {
+EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_Connect_GetLoggedInUserByIndex(EOS_HConnect Handle, int32_t Index) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
 
     ConnectState* state = (ConnectState*)Handle;
@@ -489,7 +489,7 @@ EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_Connect_GetLoggedInUserByIndex(EOS_HConn
     return NULL;
 }
 
-EOS_DECLARE_FUNC(EOS_ELoginStatus) EOS_Connect_GetLoginStatus(EOS_HConnect Handle, EOS_ProductUserId LocalUserId) {
+EOS_DECLARE_FUNC(EOS_ELoginStatus) EOS_Connect_GetLoginStatus(EOS_HConnect Handle, EOS_ProductUserId LocalUserId) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
 
     ConnectState* state = (ConnectState*)Handle;
@@ -510,7 +510,7 @@ EOS_DECLARE_FUNC(EOS_ELoginStatus) EOS_Connect_GetLoginStatus(EOS_HConnect Handl
 // Product User ID Functions
 // ============================================================================
 
-EOS_DECLARE_FUNC(EOS_Bool) EOS_ProductUserId_IsValid(EOS_ProductUserId AccountId) {
+EOS_DECLARE_FUNC(EOS_Bool) EOS_ProductUserId_IsValid(EOS_ProductUserId AccountId) { EOS_LOG_TRACE("ENTER");
     if (!AccountId) return EOS_FALSE;
 
     // Games hand IsValid stale/garbage ids; a validity *probe* must never crash.
@@ -544,7 +544,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_ProductUserId_ToString(
     EOS_ProductUserId AccountId,
     char* OutBuffer,
     int32_t* InOutBufferLength
-) {
+) { EOS_LOG_TRACE("ENTER");
     if (!OutBuffer || !InOutBufferLength) {
         return EOS_InvalidParameters;
     }
@@ -566,7 +566,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_ProductUserId_ToString(
     return EOS_Success;
 }
 
-EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_ProductUserId_FromString(const char* ProductUserIdString) {
+EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_ProductUserId_FromString(const char* ProductUserIdString) { EOS_LOG_TRACE("ENTER");
     if (!ProductUserIdString) return NULL;
 
     size_t len = strlen(ProductUserIdString);
@@ -622,7 +622,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Connect_AddNotifyLoginStatusChanged(
     const EOS_Connect_AddNotifyLoginStatusChangedOptions* Options,
     void* ClientData,
     const EOS_Connect_OnLoginStatusChangedCallback NotificationFn
-) {
+) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
 
     ConnectState* state = (ConnectState*)Handle;
@@ -669,7 +669,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Connect_AddNotifyLoginStatusChanged(
 EOS_DECLARE_FUNC(void) EOS_Connect_RemoveNotifyLoginStatusChanged(
     EOS_HConnect Handle,
     EOS_NotificationId InId
-) {
+) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
 
     ConnectState* state = (ConnectState*)Handle;
@@ -701,7 +701,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Connect_AddNotifyAuthExpiration(
     const EOS_Connect_AddNotifyAuthExpirationOptions* Options,
     void* ClientData,
     const EOS_Connect_OnAuthExpirationCallback NotificationFn
-) {
+) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
 
     ConnectState* state = (ConnectState*)Handle;
@@ -745,7 +745,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Connect_AddNotifyAuthExpiration(
 EOS_DECLARE_FUNC(void) EOS_Connect_RemoveNotifyAuthExpiration(
     EOS_HConnect Handle,
     EOS_NotificationId InId
-) {
+) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
 
     ConnectState* state = (ConnectState*)Handle;
@@ -782,7 +782,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_LinkAccount(
     const EOS_Connect_LinkAccountOptions* Options,
     void* ClientData,
     const EOS_Connect_OnLinkAccountCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
     EOS_LOG_WARN("LinkAccount not supported in LAN emulator - returning success");
 
@@ -800,7 +800,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_UnlinkAccount(
     const EOS_Connect_UnlinkAccountOptions* Options,
     void* ClientData,
     const EOS_Connect_OnUnlinkAccountCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
     EOS_LOG_WARN("UnlinkAccount not supported in LAN emulator - returning success");
 
@@ -818,7 +818,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_CreateDeviceId(
     const EOS_Connect_CreateDeviceIdOptions* Options,
     void* ClientData,
     const EOS_Connect_OnCreateDeviceIdCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
     EOS_LOG_WARN("CreateDeviceId not supported in LAN emulator - returning success");
 
@@ -835,7 +835,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_DeleteDeviceId(
     const EOS_Connect_DeleteDeviceIdOptions* Options,
     void* ClientData,
     const EOS_Connect_OnDeleteDeviceIdCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
     EOS_LOG_WARN("DeleteDeviceId not supported in LAN emulator - returning success");
 
@@ -852,7 +852,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_TransferDeviceIdAccount(
     const EOS_Connect_TransferDeviceIdAccountOptions* Options,
     void* ClientData,
     const EOS_Connect_OnTransferDeviceIdAccountCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
     EOS_LOG_WARN("TransferDeviceIdAccount not supported in LAN emulator - returning success");
 
@@ -870,7 +870,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_QueryExternalAccountMappings(
     const EOS_Connect_QueryExternalAccountMappingsOptions* Options,
     void* ClientData,
     const EOS_Connect_OnQueryExternalAccountMappingsCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_INFO(">>> QueryExternalAccountMappings called");
 
     if (CompletionDelegate) {
@@ -888,7 +888,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_QueryProductUserIdMappings(
     const EOS_Connect_QueryProductUserIdMappingsOptions* Options,
     void* ClientData,
     const EOS_Connect_OnQueryProductUserIdMappingsCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_INFO(">>> QueryProductUserIdMappings called");
 
     if (CompletionDelegate) {
@@ -904,7 +904,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_QueryProductUserIdMappings(
 EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_Connect_GetExternalAccountMapping(
     EOS_HConnect Handle,
     const EOS_Connect_GetExternalAccountMappingsOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     if (!Options || !Options->TargetExternalUserId) return NULL;
     EOS_LOG_INFO(">>> GetExternalAccountMapping: type=%d target='%s'",
                  (int)Options->AccountIdType, Options->TargetExternalUserId);
@@ -938,7 +938,7 @@ EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_Connect_GetExternalAccountMapping(
 EOS_DECLARE_FUNC(uint32_t) EOS_Connect_GetProductUserExternalAccountCount(
     EOS_HConnect Handle,
     const EOS_Connect_GetProductUserExternalAccountCountOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
     return 0;
 }
@@ -947,7 +947,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_CopyProductUserExternalAccountByIndex(
     EOS_HConnect Handle,
     const EOS_Connect_CopyProductUserExternalAccountByIndexOptions* Options,
     EOS_Connect_ExternalAccountInfo** OutExternalAccountInfo
-) {
+) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
     EOS_LOG_WARN("CopyProductUserExternalAccountByIndex not supported in LAN emulator");
     return EOS_NotFound;
@@ -957,7 +957,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_CopyProductUserExternalAccountByAccoun
     EOS_HConnect Handle,
     const EOS_Connect_CopyProductUserExternalAccountByAccountTypeOptions* Options,
     EOS_Connect_ExternalAccountInfo** OutExternalAccountInfo
-) {
+) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
     EOS_LOG_WARN("CopyProductUserExternalAccountByAccountType not supported in LAN emulator");
     return EOS_NotFound;
@@ -967,7 +967,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_CopyProductUserExternalAccountByAccoun
     EOS_HConnect Handle,
     const EOS_Connect_CopyProductUserExternalAccountByAccountIdOptions* Options,
     EOS_Connect_ExternalAccountInfo** OutExternalAccountInfo
-) {
+) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
     EOS_LOG_WARN("CopyProductUserExternalAccountByAccountId not supported in LAN emulator");
     return EOS_NotFound;
@@ -977,7 +977,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_CopyProductUserInfo(
     EOS_HConnect Handle,
     const EOS_Connect_CopyProductUserInfoOptions* Options,
     EOS_Connect_ExternalAccountInfo** OutExternalAccountInfo
-) {
+) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
     EOS_LOG_WARN("CopyProductUserInfo not supported in LAN emulator");
     return EOS_NotFound;
@@ -987,7 +987,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_CopyIdToken(
     EOS_HConnect Handle,
     const EOS_Connect_CopyIdTokenOptions* Options,
     EOS_Connect_IdToken** OutIdToken
-) {
+) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
     if (!Options || !OutIdToken || !Options->LocalUserId) {
         if (OutIdToken) *OutIdToken = NULL;
@@ -1027,7 +1027,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_VerifyIdToken(
     const EOS_Connect_VerifyIdTokenOptions* Options,
     void* ClientData,
     const EOS_Connect_OnVerifyIdTokenCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
 
     if (CompletionDelegate) {
@@ -1050,7 +1050,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_VerifyIdToken(
 EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_Connect_GetExternalAccountMappings(
     EOS_HConnect Handle,
     const EOS_Connect_GetExternalAccountMappingsOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_INFO(">>> GetExternalAccountMappings called");
     EOS_LOG_WARN("GetExternalAccountMappings not supported in LAN emulator");
     return NULL;
@@ -1061,7 +1061,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_GetProductUserIdMapping(
     const EOS_Connect_GetProductUserIdMappingOptions* Options,
     char* OutBuffer,
     int32_t* InOutBufferLength
-) {
+) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_INFO(">>> GetProductUserIdMapping called - AccountIdType=%d",
                  Options ? (int)Options->AccountIdType : -1);
 
@@ -1106,7 +1106,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_GetProductUserIdMapping(
 // Release Functions
 // ============================================================================
 
-EOS_DECLARE_FUNC(void) EOS_ProductUserIdDetails_Release(EOS_ProductUserId UserId) {
+EOS_DECLARE_FUNC(void) EOS_ProductUserIdDetails_Release(EOS_ProductUserId UserId) { EOS_LOG_TRACE("ENTER");
     // No-op. ProductUserIds are now INTERNED (see EOS_ProductUserId_FromString)
     // and live for the process lifetime, matching real EOS (which exposes no
     // release for account ids). Freeing here would corrupt the static intern
@@ -1114,12 +1114,12 @@ EOS_DECLARE_FUNC(void) EOS_ProductUserIdDetails_Release(EOS_ProductUserId UserId
     (void)UserId;
 }
 
-EOS_DECLARE_FUNC(void) EOS_Connect_ExternalAccountInfo_Release(EOS_Connect_ExternalAccountInfo* ExternalAccountInfo) {
+EOS_DECLARE_FUNC(void) EOS_Connect_ExternalAccountInfo_Release(EOS_Connect_ExternalAccountInfo* ExternalAccountInfo) { EOS_LOG_TRACE("ENTER");
     // No-op in LAN emulator as we never allocate these
     (void)ExternalAccountInfo;
 }
 
-EOS_DECLARE_FUNC(void) EOS_Connect_IdToken_Release(EOS_Connect_IdToken* IdToken) {
+EOS_DECLARE_FUNC(void) EOS_Connect_IdToken_Release(EOS_Connect_IdToken* IdToken) { EOS_LOG_TRACE("ENTER");
     if (!IdToken) return;
     if (IdToken->JsonWebToken) free((void*)IdToken->JsonWebToken);
     free(IdToken);

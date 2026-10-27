@@ -198,7 +198,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CreateSessionModification(
     EOS_HSessions Handle,
     const EOS_Sessions_CreateSessionModificationOptions* Options,
     EOS_HSessionModification* OutSessionModificationHandle
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
 
     if (!state || state->magic != 0x53455353) {
@@ -264,7 +264,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_UpdateSessionModification(
     EOS_HSessions Handle,
     const EOS_Sessions_UpdateSessionModificationOptions* Options,
     EOS_HSessionModification* OutSessionModificationHandle
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
 
     if (!state || state->magic != 0x53455353) {
@@ -303,7 +303,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_UpdateSession(
     const EOS_Sessions_UpdateSessionOptions* Options,
     void* ClientData,
     const EOS_Sessions_OnUpdateSessionCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
 
     EOS_Sessions_UpdateSessionCallbackInfo info = {0};
@@ -405,7 +405,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_DestroySession(
     const EOS_Sessions_DestroySessionOptions* Options,
     void* ClientData,
     const EOS_Sessions_OnDestroySessionCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
 
     EOS_Sessions_DestroySessionCallbackInfo info = {0};
@@ -461,7 +461,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_StartSession(
     const EOS_Sessions_StartSessionOptions* Options,
     void* ClientData,
     const EOS_Sessions_OnStartSessionCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
 
     EOS_Sessions_StartSessionCallbackInfo info = {0};
@@ -503,7 +503,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_EndSession(
     const EOS_Sessions_EndSessionOptions* Options,
     void* ClientData,
     const EOS_Sessions_OnEndSessionCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
 
     EOS_Sessions_EndSessionCallbackInfo info = {0};
@@ -547,7 +547,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_JoinSession(
     const EOS_Sessions_JoinSessionOptions* Options,
     void* ClientData,
     const EOS_Sessions_OnJoinSessionCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
 
     EOS_LOG_INFO(">>> EOS_Sessions_JoinSession: name='%s'",
@@ -624,7 +624,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_RegisterPlayers(
     const EOS_Sessions_RegisterPlayersOptions* Options,
     void* ClientData,
     const EOS_Sessions_OnRegisterPlayersCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
 
     EOS_Sessions_RegisterPlayersCallbackInfo info = {0};
@@ -697,7 +697,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_UnregisterPlayers(
     const EOS_Sessions_UnregisterPlayersOptions* Options,
     void* ClientData,
     const EOS_Sessions_OnUnregisterPlayersCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
 
     EOS_Sessions_UnregisterPlayersCallbackInfo info = {0};
@@ -768,7 +768,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CreateSessionSearch(
     EOS_HSessions Handle,
     const EOS_Sessions_CreateSessionSearchOptions* Options,
     EOS_HSessionSearch* OutSessionSearchHandle
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
 
     if (!state || state->magic != 0x53455353) {
@@ -803,7 +803,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CopyActiveSessionHandle(
     EOS_HSessions Handle,
     const EOS_Sessions_CopyActiveSessionHandleOptions* Options,
     EOS_HActiveSession* OutSessionHandle
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
 
     if (!state || state->magic != 0x53455353) {
@@ -843,7 +843,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_SendInvite(
     const EOS_Sessions_SendInviteOptions* Options,
     void* ClientData,
     const EOS_Sessions_OnSendInviteCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
 
     EOS_LOG_INFO(">>> EOS_Sessions_SendInvite: session='%s' (pretending success)",
@@ -863,7 +863,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_RejectInvite(
     const EOS_Sessions_RejectInviteOptions* Options,
     void* ClientData,
     const EOS_Sessions_OnRejectInviteCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
 
     EOS_Sessions_RejectInviteCallbackInfo info = {0};
@@ -880,7 +880,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_QueryInvites(
     const EOS_Sessions_QueryInvitesOptions* Options,
     void* ClientData,
     const EOS_Sessions_OnQueryInvitesCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
 
     EOS_LOG_INFO(">>> EOS_Sessions_QueryInvites CALLED");
@@ -898,7 +898,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_QueryInvites(
 EOS_DECLARE_FUNC(uint32_t) EOS_Sessions_GetInviteCount(
     EOS_HSessions Handle,
     const EOS_Sessions_GetInviteCountOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     (void)Handle;
     (void)Options;
     EOS_LOG_INFO(">>> EOS_Sessions_GetInviteCount -> 0 (no invites in LAN mode)");
@@ -910,7 +910,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_GetInviteIdByIndex(
     const EOS_Sessions_GetInviteIdByIndexOptions* Options,
     char* OutBuffer,
     int32_t* InOutBufferLength
-) {
+) { EOS_LOG_TRACE("ENTER");
     (void)Handle;
     (void)Options;
     (void)OutBuffer;
@@ -954,7 +954,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CopySessionHandleByInviteId(
     EOS_HSessions Handle,
     const EOS_Sessions_CopySessionHandleByInviteIdOptions* Options,
     EOS_HSessionDetails* OutSessionHandle
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
     const char* invite_id = (Options) ? Options->InviteId : NULL;
     // LAN mode has no real invites; if the game passes a session id here
@@ -969,7 +969,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CopySessionHandleByUiEventId(
     EOS_HSessions Handle,
     const EOS_Sessions_CopySessionHandleByUiEventIdOptions* Options,
     EOS_HSessionDetails* OutSessionHandle
-) {
+) { EOS_LOG_TRACE("ENTER");
     (void)Handle;
     (void)OutSessionHandle;
     EOS_LOG_WARN(">>> EOS_Sessions_CopySessionHandleByUiEventId: ui_event_id=%llu -> NotFound (unimplemented)",
@@ -981,7 +981,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CopySessionHandleForPresence(
     EOS_HSessions Handle,
     const EOS_Sessions_CopySessionHandleForPresenceOptions* Options,
     EOS_HSessionDetails* OutSessionHandle
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
     (void)Options;
     if (!state || state->magic != 0x53455353 || !OutSessionHandle) {
@@ -1009,7 +1009,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CopySessionHandleForPresence(
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_IsUserInSession(
     EOS_HSessions Handle,
     const EOS_Sessions_IsUserInSessionOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
     if (!state || state->magic != 0x53455353 || !Options || !Options->SessionName) {
         return EOS_InvalidParameters;
@@ -1038,7 +1038,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Sessions_AddNotifySessionInviteReceived
     const EOS_Sessions_AddNotifySessionInviteReceivedOptions* Options,
     void* ClientData,
     const EOS_Sessions_OnSessionInviteReceivedCallback NotificationFn
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
 
     if (!state || state->magic != 0x53455353 || !NotificationFn) {
@@ -1062,7 +1062,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Sessions_AddNotifySessionInviteReceived
 EOS_DECLARE_FUNC(void) EOS_Sessions_RemoveNotifySessionInviteReceived(
     EOS_HSessions Handle,
     EOS_NotificationId InId
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
 
     if (!state || state->magic != 0x53455353) {
@@ -1086,7 +1086,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Sessions_AddNotifySessionInviteAccepted
     const EOS_Sessions_AddNotifySessionInviteAcceptedOptions* Options,
     void* ClientData,
     const EOS_Sessions_OnSessionInviteAcceptedCallback NotificationFn
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
 
     if (!state || state->magic != 0x53455353 || !NotificationFn) {
@@ -1110,7 +1110,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Sessions_AddNotifySessionInviteAccepted
 EOS_DECLARE_FUNC(void) EOS_Sessions_RemoveNotifySessionInviteAccepted(
     EOS_HSessions Handle,
     EOS_NotificationId InId
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
 
     if (!state || state->magic != 0x53455353) {
@@ -1134,7 +1134,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Sessions_AddNotifyJoinSessionAccepted(
     const EOS_Sessions_AddNotifyJoinSessionAcceptedOptions* Options,
     void* ClientData,
     const EOS_Sessions_OnJoinSessionAcceptedCallback NotificationFn
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
 
     if (!state || state->magic != 0x53455353 || !NotificationFn) {
@@ -1158,7 +1158,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Sessions_AddNotifyJoinSessionAccepted(
 EOS_DECLARE_FUNC(void) EOS_Sessions_RemoveNotifyJoinSessionAccepted(
     EOS_HSessions Handle,
     EOS_NotificationId InId
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
 
     if (!state || state->magic != 0x53455353) {

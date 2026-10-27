@@ -695,7 +695,7 @@ static void lobby_process_invites(LobbyState* state, uint64_t now) {
 }
 
 EOS_DECLARE_FUNC(void) EOS_Lobby_SendInvite(EOS_HLobby Handle, const EOS_Lobby_SendInviteOptions* Options,
-                                            void* ClientData, const EOS_Lobby_OnSendInviteCallback CompletionDelegate) {
+                                            void* ClientData, const EOS_Lobby_OnSendInviteCallback CompletionDelegate) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     EOS_Lobby_SendInviteCallbackInfo info;
 
@@ -1046,7 +1046,7 @@ void lobby_tick(LobbyState* state) {
 /* ===========================================================================
  * Platform interface getter
  * ===========================================================================*/
-EOS_DECLARE_FUNC(EOS_HLobby) EOS_Platform_GetLobbyInterface(EOS_HPlatform Handle) {
+EOS_DECLARE_FUNC(EOS_HLobby) EOS_Platform_GetLobbyInterface(EOS_HPlatform Handle) { EOS_LOG_TRACE("ENTER");
     PlatformState* platform = (PlatformState*)Handle;
     EOS_LOG_API_ENTER();
     if (!platform) {
@@ -1122,7 +1122,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_CreateLobby(
     const EOS_Lobby_CreateLobbyOptions* Options,
     void* ClientData,
     const EOS_Lobby_OnCreateLobbyCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     Lobby* l = NULL;
     char ip[64];
@@ -1235,7 +1235,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_DestroyLobby(
     const EOS_Lobby_DestroyLobbyOptions* Options,
     void* ClientData,
     const EOS_Lobby_OnDestroyLobbyCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     Lobby* l;
     int index;
@@ -1351,7 +1351,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_JoinLobby(
     const EOS_Lobby_JoinLobbyOptions* Options,
     void* ClientData,
     const EOS_Lobby_OnJoinLobbyCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     LobbyDetailsHandle* details;
 
@@ -1391,7 +1391,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_JoinLobbyById(
     const EOS_Lobby_JoinLobbyByIdOptions* Options,
     void* ClientData,
     const EOS_Lobby_OnJoinLobbyByIdCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     Lobby* found = NULL;
 
@@ -1445,7 +1445,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_LeaveLobby(
     const EOS_Lobby_LeaveLobbyOptions* Options,
     void* ClientData,
     const EOS_Lobby_OnLeaveLobbyCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     Lobby* l;
     int index;
@@ -1497,7 +1497,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_UpdateLobbyModification(
     EOS_HLobby Handle,
     const EOS_Lobby_UpdateLobbyModificationOptions* Options,
     EOS_HLobbyModification* OutLobbyModificationHandle
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     Lobby* l;
     LobbyModificationHandle* mod;
@@ -1536,7 +1536,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_UpdateLobby(
     const EOS_Lobby_UpdateLobbyOptions* Options,
     void* ClientData,
     const EOS_Lobby_OnUpdateLobbyCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     LobbyModificationHandle* mod;
     Lobby* l;
@@ -1630,7 +1630,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_PromoteMember(
     const EOS_Lobby_PromoteMemberOptions* Options,
     void* ClientData,
     const EOS_Lobby_OnPromoteMemberCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     Lobby* l;
     LobbyMember* target;
@@ -1688,7 +1688,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_KickMember(
     const EOS_Lobby_KickMemberOptions* Options,
     void* ClientData,
     const EOS_Lobby_OnKickMemberCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     Lobby* l;
     LobbyMember* target;
@@ -1745,7 +1745,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_CreateLobbySearch(
     EOS_HLobby Handle,
     const EOS_Lobby_CreateLobbySearchOptions* Options,
     EOS_HLobbySearch* OutLobbySearchHandle
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     LobbySearchHandle* search;
 
@@ -1821,7 +1821,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_CopyLobbyDetailsHandle(
     EOS_HLobby Handle,
     const EOS_Lobby_CopyLobbyDetailsHandleOptions* Options,
     EOS_HLobbyDetails* OutLobbyDetailsHandle
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
 
     if (!state || state->magic != LOBBY_STATE_MAGIC) {
@@ -1839,7 +1839,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_CopyLobbyDetailsHandleByInviteId(
     EOS_HLobby Handle,
     const EOS_Lobby_CopyLobbyDetailsHandleByInviteIdOptions* Options,
     EOS_HLobbyDetails* OutLobbyDetailsHandle
-) {
+) { EOS_LOG_TRACE("ENTER");
     /* Invites arrive over the LAN (see "LAN lobby invites"). */
     LobbyState* state = (LobbyState*)Handle;
     LobbyInvite* inv;
@@ -1862,7 +1862,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_CopyLobbyDetailsHandleByUiEventId(
     EOS_HLobby Handle,
     const EOS_Lobby_CopyLobbyDetailsHandleByUiEventIdOptions* Options,
     EOS_HLobbyDetails* OutLobbyDetailsHandle
-) {
+) { EOS_LOG_TRACE("ENTER");
     /* No social-overlay UI events in LAN mode. */
     (void)Handle;
     (void)Options;
@@ -1881,7 +1881,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_GetConnectString(
     const EOS_Lobby_GetConnectStringOptions* Options,
     char* OutBuffer,
     uint32_t* InOutBufferLength
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     Lobby* l;
     uint32_t required;
@@ -1914,7 +1914,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_ParseConnectString(
     const EOS_Lobby_ParseConnectStringOptions* Options,
     char* OutBuffer,
     uint32_t* InOutBufferLength
-) {
+) { EOS_LOG_TRACE("ENTER");
     uint32_t required;
 
     (void)Handle;
@@ -1943,7 +1943,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_GetRTCRoomName(
     const EOS_Lobby_GetRTCRoomNameOptions* Options,
     char* OutBuffer,
     uint32_t* InOutBufferLength
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     Lobby* l;
 
@@ -1972,7 +1972,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_JoinRTCRoom(
     const EOS_Lobby_JoinRTCRoomOptions* Options,
     void* ClientData,
     const EOS_Lobby_OnJoinRTCRoomCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
 
     EOS_Lobby_JoinRTCRoomCallbackInfo info;
@@ -1991,7 +1991,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_LeaveRTCRoom(
     const EOS_Lobby_LeaveRTCRoomOptions* Options,
     void* ClientData,
     const EOS_Lobby_OnLeaveRTCRoomCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
 
     EOS_Lobby_LeaveRTCRoomCallbackInfo info;
@@ -2009,7 +2009,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_IsRTCRoomConnected(
     EOS_HLobby Handle,
     const EOS_Lobby_IsRTCRoomConnectedOptions* Options,
     EOS_Bool* bOutIsConnected
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
 
     if (!state || state->magic != LOBBY_STATE_MAGIC) {
@@ -2032,7 +2032,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyRTCRoomConnectionChanged
     const EOS_Lobby_AddNotifyRTCRoomConnectionChangedOptions* Options,
     void* ClientData,
     const EOS_Lobby_OnRTCRoomConnectionChangedCallback NotificationFn
-) {
+) { EOS_LOG_TRACE("ENTER");
     /* No RTC rooms exist, so this notification can never fire. */
     (void)Handle;
     (void)Options;
@@ -2044,7 +2044,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyRTCRoomConnectionChanged
 EOS_DECLARE_FUNC(void) EOS_Lobby_RemoveNotifyRTCRoomConnectionChanged(
     EOS_HLobby Handle,
     EOS_NotificationId InId
-) {
+) { EOS_LOG_TRACE("ENTER");
     (void)Handle;
     (void)InId;
 }
@@ -2062,7 +2062,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyLobbyUpdateReceived(
     const EOS_Lobby_AddNotifyLobbyUpdateReceivedOptions* Options,
     void* ClientData,
     const EOS_Lobby_OnLobbyUpdateReceivedCallback NotificationFn
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     (void)Options;
     if (!state || state->magic != LOBBY_STATE_MAGIC) {
@@ -2075,7 +2075,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyLobbyUpdateReceived(
 EOS_DECLARE_FUNC(void) EOS_Lobby_RemoveNotifyLobbyUpdateReceived(
     EOS_HLobby Handle,
     EOS_NotificationId InId
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     if (!state || state->magic != LOBBY_STATE_MAGIC) {
         return;
@@ -2088,7 +2088,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyLobbyMemberUpdateReceive
     const EOS_Lobby_AddNotifyLobbyMemberUpdateReceivedOptions* Options,
     void* ClientData,
     const EOS_Lobby_OnLobbyMemberUpdateReceivedCallback NotificationFn
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     (void)Options;
     if (!state || state->magic != LOBBY_STATE_MAGIC) {
@@ -2101,7 +2101,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyLobbyMemberUpdateReceive
 EOS_DECLARE_FUNC(void) EOS_Lobby_RemoveNotifyLobbyMemberUpdateReceived(
     EOS_HLobby Handle,
     EOS_NotificationId InId
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     if (!state || state->magic != LOBBY_STATE_MAGIC) {
         return;
@@ -2114,7 +2114,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyLobbyMemberStatusReceive
     const EOS_Lobby_AddNotifyLobbyMemberStatusReceivedOptions* Options,
     void* ClientData,
     const EOS_Lobby_OnLobbyMemberStatusReceivedCallback NotificationFn
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     (void)Options;
     if (!state || state->magic != LOBBY_STATE_MAGIC) {
@@ -2127,7 +2127,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyLobbyMemberStatusReceive
 EOS_DECLARE_FUNC(void) EOS_Lobby_RemoveNotifyLobbyMemberStatusReceived(
     EOS_HLobby Handle,
     EOS_NotificationId InId
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     if (!state || state->magic != LOBBY_STATE_MAGIC) {
         return;
@@ -2140,7 +2140,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyLobbyInviteReceived(
     const EOS_Lobby_AddNotifyLobbyInviteReceivedOptions* Options,
     void* ClientData,
     const EOS_Lobby_OnLobbyInviteReceivedCallback NotificationFn
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     (void)Options;
     if (!state || state->magic != LOBBY_STATE_MAGIC) {
@@ -2153,7 +2153,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyLobbyInviteReceived(
 EOS_DECLARE_FUNC(void) EOS_Lobby_RemoveNotifyLobbyInviteReceived(
     EOS_HLobby Handle,
     EOS_NotificationId InId
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     if (!state || state->magic != LOBBY_STATE_MAGIC) {
         return;
@@ -2166,7 +2166,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyLobbyInviteAccepted(
     const EOS_Lobby_AddNotifyLobbyInviteAcceptedOptions* Options,
     void* ClientData,
     const EOS_Lobby_OnLobbyInviteAcceptedCallback NotificationFn
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     (void)Options;
     if (!state || state->magic != LOBBY_STATE_MAGIC) {
@@ -2179,7 +2179,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyLobbyInviteAccepted(
 EOS_DECLARE_FUNC(void) EOS_Lobby_RemoveNotifyLobbyInviteAccepted(
     EOS_HLobby Handle,
     EOS_NotificationId InId
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     if (!state || state->magic != LOBBY_STATE_MAGIC) {
         return;
@@ -2192,7 +2192,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyJoinLobbyAccepted(
     const EOS_Lobby_AddNotifyJoinLobbyAcceptedOptions* Options,
     void* ClientData,
     const EOS_Lobby_OnJoinLobbyAcceptedCallback NotificationFn
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     (void)Options;
     if (!state || state->magic != LOBBY_STATE_MAGIC) {
@@ -2205,7 +2205,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Lobby_AddNotifyJoinLobbyAccepted(
 EOS_DECLARE_FUNC(void) EOS_Lobby_RemoveNotifyJoinLobbyAccepted(
     EOS_HLobby Handle,
     EOS_NotificationId InId
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyState* state = (LobbyState*)Handle;
     if (!state || state->magic != LOBBY_STATE_MAGIC) {
         return;

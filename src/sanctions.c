@@ -20,7 +20,7 @@
 #include "internal/callbacks.h"
 #include "internal/logging.h"
 
-EOS_DECLARE_FUNC(EOS_HSanctions) EOS_Platform_GetSanctionsInterface(EOS_HPlatform Handle) {
+EOS_DECLARE_FUNC(EOS_HSanctions) EOS_Platform_GetSanctionsInterface(EOS_HPlatform Handle) { EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
     PlatformState* platform = (PlatformState*)Handle;
     if (!platform) {
@@ -37,7 +37,7 @@ EOS_DECLARE_FUNC(void) EOS_Sanctions_QueryActivePlayerSanctions(
     const EOS_Sanctions_QueryActivePlayerSanctionsOptions* Options,
     void* ClientData,
     const EOS_Sanctions_OnQueryActivePlayerSanctionsCallback CompletionDelegate)
-{
+{ EOS_LOG_TRACE("ENTER");
     EOS_LOG_API_ENTER();
     PlatformState* platform = (PlatformState*)Handle;
 
@@ -59,7 +59,7 @@ EOS_DECLARE_FUNC(void) EOS_Sanctions_QueryActivePlayerSanctions(
 EOS_DECLARE_FUNC(uint32_t) EOS_Sanctions_GetPlayerSanctionCount(
     EOS_HSanctions Handle,
     const EOS_Sanctions_GetPlayerSanctionCountOptions* Options)
-{
+{ EOS_LOG_TRACE("ENTER");
     (void)Handle; (void)Options;
     return 0;
 }

@@ -89,7 +89,7 @@ static bool session_matches_param(const Session* session, const SearchParameter*
 EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_SetSessionId(
     EOS_HSessionSearch Handle,
     const EOS_SessionSearch_SetSessionIdOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionSearchHandle* search = (SessionSearchHandle*)Handle;
 
     if (!search || search->magic != 0x53534348) {
@@ -113,7 +113,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_SetSessionId(
 EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_SetTargetUserId(
     EOS_HSessionSearch Handle,
     const EOS_SessionSearch_SetTargetUserIdOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionSearchHandle* search = (SessionSearchHandle*)Handle;
 
     if (!search || search->magic != 0x53534348) {
@@ -132,7 +132,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_SetTargetUserId(
 EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_SetParameter(
     EOS_HSessionSearch Handle,
     const EOS_SessionSearch_SetParameterOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionSearchHandle* search = (SessionSearchHandle*)Handle;
 
     if (!search || search->magic != 0x53534348) {
@@ -188,7 +188,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_SetParameter(
 EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_RemoveParameter(
     EOS_HSessionSearch Handle,
     const EOS_SessionSearch_RemoveParameterOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionSearchHandle* search = (SessionSearchHandle*)Handle;
 
     if (!search || search->magic != 0x53534348) {
@@ -222,7 +222,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_RemoveParameter(
 EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_SetMaxResults(
     EOS_HSessionSearch Handle,
     const EOS_SessionSearch_SetMaxResultsOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionSearchHandle* search = (SessionSearchHandle*)Handle;
 
     if (!search || search->magic != 0x53534348) {
@@ -247,7 +247,7 @@ EOS_DECLARE_FUNC(void) EOS_SessionSearch_Find(
     const EOS_SessionSearch_FindOptions* Options,
     void* ClientData,
     const EOS_SessionSearch_OnFindCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionSearchHandle* search = (SessionSearchHandle*)Handle;
 
     EOS_SessionSearch_FindCallbackInfo info = {0};
@@ -378,7 +378,7 @@ queue_callback:
 EOS_DECLARE_FUNC(uint32_t) EOS_SessionSearch_GetSearchResultCount(
     EOS_HSessionSearch Handle,
     const EOS_SessionSearch_GetSearchResultCountOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionSearchHandle* search = (SessionSearchHandle*)Handle;
 
     if (!search || search->magic != 0x53534348) {
@@ -400,7 +400,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_CopySearchResultByIndex(
     EOS_HSessionSearch Handle,
     const EOS_SessionSearch_CopySearchResultByIndexOptions* Options,
     EOS_HSessionDetails* OutSessionHandle
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionSearchHandle* search = (SessionSearchHandle*)Handle;
 
     if (!search || search->magic != 0x53534348) {
@@ -437,7 +437,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_CopySearchResultByIndex(
     return EOS_Success;
 }
 
-EOS_DECLARE_FUNC(void) EOS_SessionSearch_Release(EOS_HSessionSearch Handle) {
+EOS_DECLARE_FUNC(void) EOS_SessionSearch_Release(EOS_HSessionSearch Handle) { EOS_LOG_TRACE("ENTER");
     SessionSearchHandle* search = (SessionSearchHandle*)Handle;
 
     if (search && search->magic == 0x53534348) {

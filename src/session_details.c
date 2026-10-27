@@ -75,7 +75,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionDetails_CopyInfo(
     EOS_HSessionDetails Handle,
     const EOS_SessionDetails_CopyInfoOptions* Options,
     EOS_SessionDetails_Info** OutSessionInfo
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionDetailsHandle* details = (SessionDetailsHandle*)Handle;
 
     if (!details || details->magic != 0x53445448) {
@@ -123,7 +123,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionDetails_CopyInfo(
 EOS_DECLARE_FUNC(uint32_t) EOS_SessionDetails_GetSessionAttributeCount(
     EOS_HSessionDetails Handle,
     const EOS_SessionDetails_GetSessionAttributeCountOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionDetailsHandle* details = (SessionDetailsHandle*)Handle;
 
     if (!details || details->magic != 0x53445448) {
@@ -141,7 +141,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionDetails_CopySessionAttributeByIndex(
     EOS_HSessionDetails Handle,
     const EOS_SessionDetails_CopySessionAttributeByIndexOptions* Options,
     EOS_SessionDetails_Attribute** OutSessionAttribute
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionDetailsHandle* details = (SessionDetailsHandle*)Handle;
 
     if (!details || details->magic != 0x53445448) {
@@ -218,7 +218,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionDetails_CopySessionAttributeByKey(
     EOS_HSessionDetails Handle,
     const EOS_SessionDetails_CopySessionAttributeByKeyOptions* Options,
     EOS_SessionDetails_Attribute** OutSessionAttribute
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionDetailsHandle* details = (SessionDetailsHandle*)Handle;
 
     if (!details || details->magic != 0x53445448) {
@@ -247,7 +247,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionDetails_CopySessionAttributeByKey(
     return EOS_NotFound;
 }
 
-EOS_DECLARE_FUNC(void) EOS_SessionDetails_Release(EOS_HSessionDetails SessionHandle) {
+EOS_DECLARE_FUNC(void) EOS_SessionDetails_Release(EOS_HSessionDetails SessionHandle) { EOS_LOG_TRACE("ENTER");
     SessionDetailsHandle* details = (SessionDetailsHandle*)SessionHandle;
 
     if (details && details->magic == 0x53445448) {
@@ -256,7 +256,7 @@ EOS_DECLARE_FUNC(void) EOS_SessionDetails_Release(EOS_HSessionDetails SessionHan
     }
 }
 
-EOS_DECLARE_FUNC(void) EOS_SessionDetails_Info_Release(EOS_SessionDetails_Info* SessionInfo) {
+EOS_DECLARE_FUNC(void) EOS_SessionDetails_Info_Release(EOS_SessionDetails_Info* SessionInfo) { EOS_LOG_TRACE("ENTER");
     if (!SessionInfo) {
         return;
     }
@@ -286,7 +286,7 @@ EOS_DECLARE_FUNC(void) EOS_SessionDetails_Info_Release(EOS_SessionDetails_Info* 
     free(SessionInfo);
 }
 
-EOS_DECLARE_FUNC(void) EOS_SessionDetails_Attribute_Release(EOS_SessionDetails_Attribute* SessionAttribute) {
+EOS_DECLARE_FUNC(void) EOS_SessionDetails_Attribute_Release(EOS_SessionDetails_Attribute* SessionAttribute) { EOS_LOG_TRACE("ENTER");
     if (!SessionAttribute) {
         return;
     }
@@ -310,7 +310,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_ActiveSession_CopyInfo(
     EOS_HActiveSession Handle,
     const EOS_ActiveSession_CopyInfoOptions* Options,
     EOS_ActiveSession_Info** OutActiveSessionInfo
-) {
+) { EOS_LOG_TRACE("ENTER");
     ActiveSessionHandle* active = (ActiveSessionHandle*)Handle;
 
     if (!active || active->magic != 0x41435448) {
@@ -364,7 +364,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_ActiveSession_CopyInfo(
 EOS_DECLARE_FUNC(uint32_t) EOS_ActiveSession_GetRegisteredPlayerCount(
     EOS_HActiveSession Handle,
     const EOS_ActiveSession_GetRegisteredPlayerCountOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     ActiveSessionHandle* active = (ActiveSessionHandle*)Handle;
 
     if (!active || active->magic != 0x41435448) {
@@ -385,7 +385,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_ActiveSession_GetRegisteredPlayerCount(
 EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_ActiveSession_GetRegisteredPlayerByIndex(
     EOS_HActiveSession Handle,
     const EOS_ActiveSession_GetRegisteredPlayerByIndexOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     ActiveSessionHandle* active = (ActiveSessionHandle*)Handle;
 
     if (!active || active->magic != 0x41435448) {
@@ -407,7 +407,7 @@ EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_ActiveSession_GetRegisteredPlayerByIndex
     return active->session->registered_players[Options->PlayerIndex];
 }
 
-EOS_DECLARE_FUNC(void) EOS_ActiveSession_Release(EOS_HActiveSession Handle) {
+EOS_DECLARE_FUNC(void) EOS_ActiveSession_Release(EOS_HActiveSession Handle) { EOS_LOG_TRACE("ENTER");
     ActiveSessionHandle* active = (ActiveSessionHandle*)Handle;
 
     if (active && active->magic == 0x41435448) {
@@ -416,7 +416,7 @@ EOS_DECLARE_FUNC(void) EOS_ActiveSession_Release(EOS_HActiveSession Handle) {
     }
 }
 
-EOS_DECLARE_FUNC(void) EOS_ActiveSession_Info_Release(EOS_ActiveSession_Info* ActiveSessionInfo) {
+EOS_DECLARE_FUNC(void) EOS_ActiveSession_Info_Release(EOS_ActiveSession_Info* ActiveSessionInfo) { EOS_LOG_TRACE("ENTER");
     if (!ActiveSessionInfo) {
         return;
     }

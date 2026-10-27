@@ -33,7 +33,7 @@ typedef struct IntegratedPlatformOptionsContainer {
 EOS_DECLARE_FUNC(EOS_EResult) EOS_IntegratedPlatform_CreateIntegratedPlatformOptionsContainer(
     const EOS_IntegratedPlatform_CreateIntegratedPlatformOptionsContainerOptions* Options,
     EOS_HIntegratedPlatformOptionsContainer* OutIntegratedPlatformOptionsContainerHandle)
-{
+{ EOS_LOG_TRACE("ENTER");
     (void)Options;  /* only carries ApiVersion; nothing to act on for LAN */
     if (!OutIntegratedPlatformOptionsContainerHandle) {
         EOS_LOG_ERROR("IntegratedPlatform_CreateContainer: OutHandle is NULL");
@@ -54,7 +54,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_IntegratedPlatform_CreateIntegratedPlatformOpt
 EOS_DECLARE_FUNC(EOS_EResult) EOS_IntegratedPlatformOptionsContainer_Add(
     EOS_HIntegratedPlatformOptionsContainer Handle,
     const EOS_IntegratedPlatformOptionsContainer_AddOptions* InOptions)
-{
+{ EOS_LOG_TRACE("ENTER");
     (void)InOptions;  /* accept and ignore the integrated-platform options */
     IntegratedPlatformOptionsContainer* c = (IntegratedPlatformOptionsContainer*)Handle;
     if (!c || c->magic != IPOC_MAGIC) {
@@ -68,7 +68,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_IntegratedPlatformOptionsContainer_Add(
 
 EOS_DECLARE_FUNC(void) EOS_IntegratedPlatformOptionsContainer_Release(
     EOS_HIntegratedPlatformOptionsContainer IntegratedPlatformOptionsContainerHandle)
-{
+{ EOS_LOG_TRACE("ENTER");
     /* Header contract: safe to call on a NULL handle. */
     IntegratedPlatformOptionsContainer* c =
         (IntegratedPlatformOptionsContainer*)IntegratedPlatformOptionsContainerHandle;

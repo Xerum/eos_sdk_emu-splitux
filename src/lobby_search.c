@@ -90,7 +90,7 @@ static bool lobby_matches_param(const Lobby* lobby, const LobbySearchParameter* 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_SetLobbyId(
     EOS_HLobbySearch Handle,
     const EOS_LobbySearch_SetLobbyIdOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbySearchHandle* search = (LobbySearchHandle*)Handle;
 
     if (!search || search->magic != 0x4C534348) {
@@ -114,7 +114,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_SetLobbyId(
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_SetTargetUserId(
     EOS_HLobbySearch Handle,
     const EOS_LobbySearch_SetTargetUserIdOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbySearchHandle* search = (LobbySearchHandle*)Handle;
 
     if (!search || search->magic != 0x4C534348) {
@@ -137,7 +137,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_SetTargetUserId(
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_SetParameter(
     EOS_HLobbySearch Handle,
     const EOS_LobbySearch_SetParameterOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbySearchHandle* search = (LobbySearchHandle*)Handle;
 
     if (!search || search->magic != 0x4C534348) {
@@ -193,7 +193,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_SetParameter(
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_RemoveParameter(
     EOS_HLobbySearch Handle,
     const EOS_LobbySearch_RemoveParameterOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbySearchHandle* search = (LobbySearchHandle*)Handle;
 
     if (!search || search->magic != 0x4C534348) {
@@ -227,7 +227,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_RemoveParameter(
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_SetMaxResults(
     EOS_HLobbySearch Handle,
     const EOS_LobbySearch_SetMaxResultsOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbySearchHandle* search = (LobbySearchHandle*)Handle;
 
     if (!search || search->magic != 0x4C534348) {
@@ -252,7 +252,7 @@ EOS_DECLARE_FUNC(void) EOS_LobbySearch_Find(
     const EOS_LobbySearch_FindOptions* Options,
     void* ClientData,
     const EOS_LobbySearch_OnFindCallback CompletionDelegate
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbySearchHandle* search = (LobbySearchHandle*)Handle;
     LobbyState* state = NULL;
 
@@ -411,7 +411,7 @@ queue_callback:
 EOS_DECLARE_FUNC(uint32_t) EOS_LobbySearch_GetSearchResultCount(
     EOS_HLobbySearch Handle,
     const EOS_LobbySearch_GetSearchResultCountOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbySearchHandle* search = (LobbySearchHandle*)Handle;
 
     if (!search || search->magic != 0x4C534348) {
@@ -433,7 +433,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_CopySearchResultByIndex(
     EOS_HLobbySearch Handle,
     const EOS_LobbySearch_CopySearchResultByIndexOptions* Options,
     EOS_HLobbyDetails* OutLobbyDetailsHandle
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbySearchHandle* search = (LobbySearchHandle*)Handle;
 
     if (!search || search->magic != 0x4C534348) {
@@ -470,7 +470,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbySearch_CopySearchResultByIndex(
     return EOS_Success;
 }
 
-EOS_DECLARE_FUNC(void) EOS_LobbySearch_Release(EOS_HLobbySearch Handle) {
+EOS_DECLARE_FUNC(void) EOS_LobbySearch_Release(EOS_HLobbySearch Handle) { EOS_LOG_TRACE("ENTER");
     LobbySearchHandle* search = (LobbySearchHandle*)Handle;
 
     if (search && search->magic == 0x4C534348) {

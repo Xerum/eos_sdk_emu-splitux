@@ -53,7 +53,7 @@ static EOS_EResult lobby_copy_attribute_data(
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_SetBucketId(
     EOS_HLobbyModification Handle,
     const EOS_LobbyModification_SetBucketIdOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyModificationHandle* mod = (LobbyModificationHandle*)Handle;
 
     if (!mod || mod->magic != 0x4C4D4F44) {
@@ -77,7 +77,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_SetBucketId(
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_SetPermissionLevel(
     EOS_HLobbyModification Handle,
     const EOS_LobbyModification_SetPermissionLevelOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyModificationHandle* mod = (LobbyModificationHandle*)Handle;
 
     if (!mod || mod->magic != 0x4C4D4F44) {
@@ -96,7 +96,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_SetPermissionLevel(
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_SetMaxMembers(
     EOS_HLobbyModification Handle,
     const EOS_LobbyModification_SetMaxMembersOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyModificationHandle* mod = (LobbyModificationHandle*)Handle;
 
     if (!mod || mod->magic != 0x4C4D4F44) {
@@ -119,7 +119,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_SetMaxMembers(
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_SetInvitesAllowed(
     EOS_HLobbyModification Handle,
     const EOS_LobbyModification_SetInvitesAllowedOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyModificationHandle* mod = (LobbyModificationHandle*)Handle;
 
     if (!mod || mod->magic != 0x4C4D4F44) {
@@ -138,7 +138,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_SetInvitesAllowed(
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_AddAttribute(
     EOS_HLobbyModification Handle,
     const EOS_LobbyModification_AddAttributeOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyModificationHandle* mod = (LobbyModificationHandle*)Handle;
 
     if (!mod || mod->magic != 0x4C4D4F44) {
@@ -188,7 +188,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_AddAttribute(
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_RemoveAttribute(
     EOS_HLobbyModification Handle,
     const EOS_LobbyModification_RemoveAttributeOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyModificationHandle* mod = (LobbyModificationHandle*)Handle;
 
     if (!mod || mod->magic != 0x4C4D4F44) {
@@ -221,7 +221,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_RemoveAttribute(
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_AddMemberAttribute(
     EOS_HLobbyModification Handle,
     const EOS_LobbyModification_AddMemberAttributeOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyModificationHandle* mod = (LobbyModificationHandle*)Handle;
 
     if (!mod || mod->magic != 0x4C4D4F44) {
@@ -265,7 +265,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_AddMemberAttribute(
 EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_RemoveMemberAttribute(
     EOS_HLobbyModification Handle,
     const EOS_LobbyModification_RemoveMemberAttributeOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     LobbyModificationHandle* mod = (LobbyModificationHandle*)Handle;
 
     if (!mod || mod->magic != 0x4C4D4F44) {
@@ -295,7 +295,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_RemoveMemberAttribute(
     return EOS_NotFound;
 }
 
-EOS_DECLARE_FUNC(void) EOS_LobbyModification_Release(EOS_HLobbyModification Handle) {
+EOS_DECLARE_FUNC(void) EOS_LobbyModification_Release(EOS_HLobbyModification Handle) { EOS_LOG_TRACE("ENTER");
     LobbyModificationHandle* mod = (LobbyModificationHandle*)Handle;
 
     if (mod && mod->magic == 0x4C4D4F44) {
