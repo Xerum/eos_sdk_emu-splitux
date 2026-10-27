@@ -34,21 +34,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Option
     if (!log_path || strlen(log_path) == 0) {
         log_path = "eos-lan.log";
     }
-    // Log level from EOSLAN_LOG_LEVEL (0-5 or none/error/warn/info/debug/trace).
-    // Default INFO: TRACE logged every P2P packet, growing the file by MBs per
-    // minute of play and costing frame time.
-    LogLevel log_level = LOG_LEVEL_INFO;
-    const char* lvl = getenv("EOSLAN_LOG_LEVEL");
-    if (lvl && lvl[0]) {
-        if (lvl[0] >= '0' && lvl[0] <= '5') log_level = (LogLevel)(lvl[0] - '0');
-        else if (_stricmp(lvl, "none") == 0)  log_level = LOG_LEVEL_NONE;
-        else if (_stricmp(lvl, "error") == 0) log_level = LOG_LEVEL_ERROR;
-        else if (_stricmp(lvl, "warn") == 0)  log_level = LOG_LEVEL_WARN;
-        else if (_stricmp(lvl, "info") == 0)  log_level = LOG_LEVEL_INFO;
-        else if (_stricmp(lvl, "debug") == 0) log_level = LOG_LEVEL_DEBUG;
-        else if (_stricmp(lvl, "trace") == 0) log_level = LOG_LEVEL_TRACE;
-    }
-    log_init(log_level, log_path);
+    log_init(log_level_from_env(), log_path);
 
     g_sdk_initialized = true;
     if (Options->ProductName)    strncpy(g_product_name, Options->ProductName, sizeof(g_product_name) - 1);

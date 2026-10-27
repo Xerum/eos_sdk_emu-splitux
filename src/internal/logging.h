@@ -30,6 +30,9 @@ void log_shutdown(void);
  */
 void log_set_level(LogLevel level);
 
+// Level from EOSLAN_LOG_LEVEL (0-5 or none/error/warn/info/debug/trace), default INFO.
+LogLevel log_level_from_env(void);
+
 /**
  * Log a message.
  */

@@ -7,6 +7,7 @@
 #include "eos/eos_logging.h"
 #include "internal/logging.h"
 #include "internal/auth_internal.h"
+#include <stdlib.h>
 #include <string.h>
 
 // Implemented in social_bridge.c. Declared here (not via sessions_internal.h, which
@@ -43,7 +44,19 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_ByteArray_ToString(const uint8_t* ByteArray, u
     if (OutBuffer && InOutBufferLength && *InOutBufferLength > 0) { OutBuffer[0] = '\0'; }
     return EOS_Success;
 }
-EOS_DECLARE_FUNC(const char*) EOS_GetVersion(void) { EOS_LOG_INFO("EOS_GetVersion called - returning 1.16.0"); return "1.16.0"; }
+// Games built against a newer SDK may refuse to initialize when the reported
+// version is older than theirs (Revenge of the Savage Planet ships 1.17.1.3 and
+// never called EOS_Initialize with "1.16.0"). Default to a recent version;
+// EOSLAN_SDK_VERSION overrides it per game.
+EOS_DECLARE_FUNC(const char*) EOS_GetVersion(void) {
+    static const char* version = NULL;
+    if (!version) {
+        const char* v = getenv("EOSLAN_SDK_VERSION");
+        version = (v && v[0]) ? v : "1.17.1.3-44532354";
+    }
+    EOS_LOG_INFO("EOS_GetVersion called - returning %s", version);
+    return version;
+}
 
 // ============ EpicAccountId ============
 EOS_DECLARE_FUNC(EOS_EpicAccountId) EOS_EpicAccountId_FromString(const char* String) {
