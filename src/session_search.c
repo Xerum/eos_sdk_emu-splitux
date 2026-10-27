@@ -362,6 +362,16 @@ EOS_DECLARE_FUNC(void) EOS_SessionSearch_Find(
             continue;
         }
 
+        // Skip our own hosted sessions: the discovery cache also holds our own
+        // announces, and Remnant II joins the first result -> joined itself.
+        bool own = false;
+        for (int k = 0; k < state->local_session_count && !own; k++) {
+            own = strcmp(state->local_sessions[k].session_id, s->session_id) == 0;
+        }
+        if (own) {
+            continue;
+        }
+
         // Check session ID filter
         if (search->target_session_id[0] != '\0') {
             if (strcmp(s->session_id, search->target_session_id) != 0) {
