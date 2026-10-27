@@ -4,6 +4,7 @@
 #include "internal/callbacks.h"
 #include "internal/lan_discovery.h"
 #include "internal/logging.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -25,11 +26,53 @@ static bool session_matches_param(const Session* session, const SearchParameter*
     }
 
     if (!attr) {
+        EOS_LOG_INFO("SessionSearch_Find: '%s' has no attribute '%s'", session->session_id, param->key);
         return false;  // Attribute not found
     }
 
+    // DISTANCE only sorts results, it never excludes a session
+    if (param->comparison == EOS_CO_DISTANCE) {
+        return true;
+    }
+
     if (attr->type != param->type) {
+        EOS_LOG_INFO("SessionSearch_Find: '%s' attribute '%s' type %d != search type %d",
+                     session->session_id, param->key, (int)attr->type, (int)param->type);
         return false;  // Type mismatch
+    }
+
+    // ANYOF/ONEOF (and their negations) take a ';'-separated value list
+    if (param->comparison == EOS_CO_ANYOF || param->comparison == EOS_CO_ONEOF ||
+        param->comparison == EOS_CO_NOTANYOF || param->comparison == EOS_CO_NOTONEOF) {
+        bool negate = param->comparison == EOS_CO_NOTANYOF || param->comparison == EOS_CO_NOTONEOF;
+        char value[MAX_SESSION_ATTRIBUTE_VALUE_LEN + 1];
+        if (attr->type == EOS_AT_STRING) {
+            strncpy(value, attr->value.as_string, sizeof(value) - 1);
+        } else if (attr->type == EOS_AT_INT64) {
+            snprintf(value, sizeof(value), "%lld", (long long)attr->value.as_int64);
+        } else if (attr->type == EOS_AT_BOOLEAN) {
+            snprintf(value, sizeof(value), "%s", attr->value.as_bool ? "true" : "false");
+        } else {
+            snprintf(value, sizeof(value), "%g", attr->value.as_double);
+        }
+        value[sizeof(value) - 1] = '\0';
+        bool found = false;
+        if (param->type == EOS_AT_STRING) {
+            char list[MAX_SESSION_ATTRIBUTE_VALUE_LEN + 1];
+            strncpy(list, param->value.as_string, sizeof(list) - 1);
+            list[sizeof(list) - 1] = '\0';
+            char* ctx = NULL;
+            for (char* tok = strtok_s(list, ";,", &ctx); tok && !found; tok = strtok_s(NULL, ";,", &ctx)) {
+                found = strcmp(tok, value) == 0;
+            }
+        } else if (param->type == EOS_AT_INT64) {
+            found = attr->value.as_int64 == param->value.as_int64;
+        } else if (param->type == EOS_AT_BOOLEAN) {
+            found = (attr->value.as_bool == EOS_TRUE) == (param->value.as_bool == EOS_TRUE);
+        } else {
+            found = attr->value.as_double == param->value.as_double;
+        }
+        return negate ? !found : found;
     }
 
     // Perform comparison based on type
@@ -359,6 +402,13 @@ EOS_DECLARE_FUNC(void) EOS_SessionSearch_Find(
         bool matches = true;
         for (int p = 0; p < search->param_count && matches; p++) {
             matches = session_matches_param(s, &search->params[p]);
+            if (!matches) {
+                const SearchParameter* sp = &search->params[p];
+                EOS_LOG_INFO("SessionSearch_Find: REJECT '%s' (host %s) on '%s' op=%d type=%d value=%s/%lld",
+                             s->session_id, s->host_address, sp->key, (int)sp->comparison, (int)sp->type,
+                             sp->type == EOS_AT_STRING ? sp->value.as_string : "-",
+                             sp->type == EOS_AT_INT64 ? (long long)sp->value.as_int64 : (long long)sp->value.as_bool);
+            }
         }
 
         if (matches) {
@@ -368,6 +418,8 @@ EOS_DECLARE_FUNC(void) EOS_SessionSearch_Find(
 
     search->search_complete = true;
     info.ResultCode = (search->result_count > 0) ? EOS_Success : EOS_NotFound;
+    EOS_LOG_INFO("SessionSearch_Find: %d discovered, %d params, %d result(s)",
+                 state->discovered_session_count, search->param_count, search->result_count);
 
 queue_callback:
     if (CompletionDelegate && state && state->platform && state->platform->callbacks) {
