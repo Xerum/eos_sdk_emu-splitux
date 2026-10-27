@@ -218,7 +218,7 @@ EOS_DECLARE_FUNC(void) EOS_Leaderboards_LeaderboardUserScore_Release(EOS_Leaderb
 // NOTE: the real Lobby interface now lives in lobby.c / lobby_modification.c /
 // lobby_search.c / lobby_details.c. Only EOS_Lobby_SendInvite remains a stub
 // (no LAN invite system; Palworld co-op uses search + join, not invites).
-EOS_DECLARE_FUNC(void) EOS_Lobby_SendInvite(EOS_HLobby Handle, const void* Options, void* ClientData, void* Callback) { EOS_LOG_WARN("STUB called: %s", __func__); const EOS_Lobby_SendInviteOptions* o = (const EOS_Lobby_SendInviteOptions*)Options; EOS_Lobby_SendInviteCallbackInfo info = {0}; info.ResultCode = EOS_Success; info.ClientData = ClientData; info.LobbyId = o ? o->LobbyId : NULL; xerum_queue_completion(Handle, Callback, &info, sizeof(info)); }
+/* EOS_Lobby_SendInvite now lives in lobby.c (LAN invites). */
 
 // ============ Metrics ============
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Metrics_BeginPlayerSession(EOS_HMetrics Handle, const void* Options) { EOS_LOG_WARN("STUB called: %s", __func__); UNUSED(Handle); UNUSED(Options); return EOS_Success; }

@@ -53,6 +53,8 @@ struct DiscoveryService {
     bool localhost_mode;  // Enable localhost unicast for Wine/Proton
     bool query_received;  // Flag to indicate a query was received and we should broadcast
     bool key_by_source;   // cache key = session id + source ip (lobby member sync)
+    DiscoveryRawHandler raw_handler;  // other message types (e.g. lobby invites)
+    void* raw_ctx;
 
     CachedSession cache[MAX_CACHED_SESSIONS];
     int cache_count;
@@ -660,6 +662,12 @@ void discovery_poll(DiscoveryService* ds) {
             // Another instance is searching - set flag to trigger immediate broadcast
             ds->query_received = true;
             EOS_LOG_DEBUG("Received query from peer, will broadcast sessions immediately");
+        } else if (msg_type != MSG_ANNOUNCE && msg_type != MSG_QUERY && msg_type != MSG_USER_BEACON) {
+            if (ds->raw_handler) {
+                char source_ip[16];
+                inet_ntop(AF_INET, &from.sin_addr, source_ip, sizeof(source_ip));
+                ds->raw_handler(ds->raw_ctx, msg_type, ds->recv_buffer + 9, (int)(len - 9), source_ip);
+            }
         } else if (msg_type == MSG_USER_BEACON) {
             UserBeacon user;
             if (parse_user_beacon(ds->recv_buffer + 9, (int)(len - 9), &user)) {
@@ -693,6 +701,36 @@ const Session* discovery_get_session_at(DiscoveryService* ds, int index) {
 uint64_t discovery_get_received_at(DiscoveryService* ds, int index) {
     if (!ds || index < 0 || index >= ds->cache_count) return 0;
     return ds->cache[index].received_at;
+}
+
+void discovery_set_raw_handler(DiscoveryService* ds, DiscoveryRawHandler handler, void* ctx) {
+    if (!ds) return;
+    ds->raw_handler = handler;
+    ds->raw_ctx = ctx;
+}
+
+void discovery_broadcast_raw(DiscoveryService* ds, uint8_t msg_type, const uint8_t* payload, int len) {
+    if (!ds || len < 0 || len > MAX_PACKET_SIZE - 9) return;
+    uint8_t* buf = ds->send_buffer;
+    int offset = 0;
+    memcpy(buf + offset, DISCOVERY_MAGIC, 6); offset += 6;
+    *(uint16_t*)(buf + offset) = htons(DISCOVERY_VERSION); offset += 2;
+    buf[offset++] = msg_type;
+    if (len > 0) { memcpy(buf + offset, payload, (size_t)len); offset += len; }
+
+    struct sockaddr_in dest = {0};
+    dest.sin_family = AF_INET;
+    dest.sin_port = htons(ds->port);
+    inet_pton(AF_INET, ds->broadcast_addr, &dest.sin_addr);
+    sendto(ds->socket_fd, (const char*)buf, offset, 0, (struct sockaddr*)&dest, sizeof(dest));
+
+    if (ds->localhost_mode) {
+        struct sockaddr_in lo = {0};
+        lo.sin_family = AF_INET;
+        lo.sin_port = htons(ds->port);
+        inet_pton(AF_INET, "127.255.255.255", &lo.sin_addr);
+        sendto(ds->socket_fd, (const char*)buf, offset, 0, (struct sockaddr*)&lo, sizeof(lo));
+    }
 }
 
 void discovery_set_key_by_source(DiscoveryService* ds, bool on) {

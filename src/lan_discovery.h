@@ -68,6 +68,13 @@ uint64_t discovery_get_received_at(DiscoveryService* ds, int index);
 /** Key the cache by session id + source IP instead of id alone (lobby member sync). */
 void discovery_set_key_by_source(DiscoveryService* ds, bool on);
 
+/** Handler for message types other than announce/query/user beacon (payload after the 9-byte header). */
+typedef void (*DiscoveryRawHandler)(void* ctx, uint8_t msg_type, const uint8_t* data, int len, const char* source_ip);
+void discovery_set_raw_handler(DiscoveryService* ds, DiscoveryRawHandler handler, void* ctx);
+
+/** Broadcast a custom message type (header + payload) on this discovery port. */
+void discovery_broadcast_raw(DiscoveryService* ds, uint8_t msg_type, const uint8_t* payload, int len);
+
 /**
  * Clear all discovered sessions.
  */

@@ -148,6 +148,19 @@ typedef struct LobbyNotificationEntry {
     struct LobbyNotificationEntry* next;
 } LobbyNotificationEntry;
 
+// A lobby invite received over the LAN (see lobby.c "LAN lobby invites")
+#define MAX_LOBBY_INVITES 16
+typedef struct {
+    char invite_id[LOBBY_ID_LEN + 1];
+    char lobby_id[LOBBY_ID_LEN + 1];
+    char from[LOBBY_OWNER_ID_STRING_LEN];
+    char to[LOBBY_OWNER_ID_STRING_LEN];
+    uint64_t received_at;
+    uint64_t accept_at;   // 0 = no auto-accept
+    bool accepted;
+    bool valid;
+} LobbyInvite;
+
 // Main lobby state
 typedef struct LobbyState {
     uint32_t magic;  // 0x4C4F4259 = "LOBY"
@@ -176,6 +189,10 @@ typedef struct LobbyState {
     LobbyNotificationEntry* invite_accepted_notifications;
     LobbyNotificationEntry* join_accepted_notifications;
     EOS_NotificationId next_notification_id;
+
+    // LAN invites
+    LobbyInvite invites[MAX_LOBBY_INVITES];
+    bool auto_accept_invites;   // EOSLAN_AUTO_ACCEPT_INVITES (default on)
 } LobbyState;
 
 // Creation/destruction/tick

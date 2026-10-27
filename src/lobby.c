@@ -18,6 +18,7 @@
 #include "eos/eos_common.h"
 #include "internal/lobby_internal.h"
 #include "internal/sessions_internal.h"   /* Session struct (LAN wire format) */
+#include "internal/connect_internal.h"    /* local users (LAN invites) */
 #include "internal/lan_discovery.h"
 #include "internal/callbacks.h"
 #include "internal/p2p_internal.h"
@@ -514,6 +515,224 @@ static void lobby_sync_timeouts(LobbyState* state, uint64_t now) {
     }
 }
 
+/* ===========================================================================
+ * LAN lobby invites
+ *
+ * There is no Epic overlay, so invites travel as a broadcast on the lobby
+ * discovery port. The invitee's emulator reports InviteReceived and, unless
+ * EOSLAN_AUTO_ACCEPT_INVITES=0, accepts it shortly after -- what a click in
+ * the Epic overlay would do. The game then copies the lobby by invite id and
+ * joins it as usual (LAN member sync takes over from there).
+ * ===========================================================================*/
+#define MSG_LOBBY_INVITE 0x10
+#define INVITE_AUTO_ACCEPT_DELAY_MS 1500
+#define INVITE_WAIT_FOR_LOBBY_MS 10000
+
+/* Fixed-size wire payload (char arrays only, no padding). */
+typedef struct {
+    char invite_id[LOBBY_ID_LEN + 1];
+    char lobby_id[LOBBY_ID_LEN + 1];
+    char from[LOBBY_OWNER_ID_STRING_LEN];
+    char to[LOBBY_OWNER_ID_STRING_LEN];
+} LobbyInviteWire;
+
+static EOS_ProductUserId lobby_local_user_by_string(LobbyState* state, const char* id) {
+    ConnectState* cs = (state && state->platform) ? state->platform->connect : NULL;
+    int i;
+    if (!cs || !id || !id[0]) {
+        return NULL;
+    }
+    for (i = 0; i < MAX_LOCAL_USERS; i++) {
+        if (cs->users[i].in_use && _stricmp(cs->users[i].user_id.id_string, id) == 0) {
+            return (EOS_ProductUserId)&cs->users[i].user_id;
+        }
+    }
+    return NULL;
+}
+
+static EOS_ProductUserId lobby_any_local_user(LobbyState* state) {
+    ConnectState* cs = (state && state->platform) ? state->platform->connect : NULL;
+    int i;
+    if (!cs) {
+        return NULL;
+    }
+    for (i = 0; i < MAX_LOCAL_USERS; i++) {
+        if (cs->users[i].in_use) {
+            return (EOS_ProductUserId)&cs->users[i].user_id;
+        }
+    }
+    return NULL;
+}
+
+static LobbyInvite* lobby_find_invite(LobbyState* state, const char* invite_id) {
+    int i;
+    if (!state || !invite_id) {
+        return NULL;
+    }
+    for (i = 0; i < MAX_LOBBY_INVITES; i++) {
+        if (state->invites[i].valid && strcmp(state->invites[i].invite_id, invite_id) == 0) {
+            return &state->invites[i];
+        }
+    }
+    return NULL;
+}
+
+static bool lobby_is_known(LobbyState* state, const char* lobby_id) {
+    int i;
+    if (find_local_lobby_by_id(state, lobby_id)) {
+        return true;
+    }
+    for (i = 0; i < state->discovered_lobby_count; i++) {
+        if (state->discovered_lobbies[i].valid &&
+            strcmp(state->discovered_lobbies[i].lobby_id, lobby_id) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static void lobby_on_discovery_raw(void* ctx, uint8_t msg_type, const uint8_t* data, int len,
+                                   const char* source_ip) {
+    LobbyState* state = (LobbyState*)ctx;
+    LobbyInviteWire w;
+    LobbyInvite* inv;
+    LobbyNotificationEntry* e;
+    EOS_ProductUserId local;
+    int i;
+    int slot = -1;
+
+    if (!state || msg_type != MSG_LOBBY_INVITE || len < (int)sizeof(w)) {
+        return;
+    }
+    memcpy(&w, data, sizeof(w));
+    w.invite_id[LOBBY_ID_LEN] = '\0';
+    w.lobby_id[LOBBY_ID_LEN] = '\0';
+    w.from[LOBBY_OWNER_ID_STRING_LEN - 1] = '\0';
+    w.to[LOBBY_OWNER_ID_STRING_LEN - 1] = '\0';
+
+    local = lobby_local_user_by_string(state, w.to);
+    if (!local || lobby_find_invite(state, w.invite_id)) {
+        return;  /* not for us, or a duplicate of the double send */
+    }
+
+    for (i = 0; i < MAX_LOBBY_INVITES; i++) {
+        if (!state->invites[i].valid) {
+            slot = i;
+            break;
+        }
+    }
+    if (slot < 0) {
+        slot = 0;
+        for (i = 1; i < MAX_LOBBY_INVITES; i++) {
+            if (state->invites[i].received_at < state->invites[slot].received_at) {
+                slot = i;
+            }
+        }
+    }
+    inv = &state->invites[slot];
+    memset(inv, 0, sizeof(*inv));
+    strncpy(inv->invite_id, w.invite_id, sizeof(inv->invite_id) - 1);
+    strncpy(inv->lobby_id, w.lobby_id, sizeof(inv->lobby_id) - 1);
+    strncpy(inv->from, w.from, sizeof(inv->from) - 1);
+    strncpy(inv->to, w.to, sizeof(inv->to) - 1);
+    inv->received_at = get_time_ms();
+    inv->accept_at = state->auto_accept_invites ? inv->received_at + INVITE_AUTO_ACCEPT_DELAY_MS : 0;
+    inv->valid = true;
+
+    EOS_LOG_INFO("Lobby invite %s received from %s (%s) for lobby %s%s", inv->invite_id, inv->from,
+                 source_ip ? source_ip : "?", inv->lobby_id,
+                 state->auto_accept_invites ? " - will auto-accept" : "");
+
+    if (!state->platform || !state->platform->callbacks) {
+        return;
+    }
+    for (e = state->invite_received_notifications; e; e = e->next) {
+        EOS_Lobby_LobbyInviteReceivedCallbackInfo info;
+        memset(&info, 0, sizeof(info));
+        info.ClientData = e->client_data;
+        info.InviteId = stable_lobby_id(inv->invite_id);
+        info.LocalUserId = local;
+        info.TargetUserId = EOS_ProductUserId_FromString(inv->from);
+        callback_queue_push(state->platform->callbacks, e->callback, &info, sizeof(info));
+    }
+}
+
+static void lobby_process_invites(LobbyState* state, uint64_t now) {
+    int i;
+    for (i = 0; i < MAX_LOBBY_INVITES; i++) {
+        LobbyInvite* inv = &state->invites[i];
+        LobbyNotificationEntry* e;
+        EOS_ProductUserId local;
+
+        if (!inv->valid || inv->accepted || !inv->accept_at || now < inv->accept_at) {
+            continue;
+        }
+        if (!lobby_is_known(state, inv->lobby_id)) {
+            if (now - inv->received_at < INVITE_WAIT_FOR_LOBBY_MS) {
+                continue;  /* lobby announce not heard yet */
+            }
+            EOS_LOG_WARN("Lobby invite %s: lobby %s never announced, dropping", inv->invite_id, inv->lobby_id);
+            inv->accepted = true;
+            continue;
+        }
+        inv->accepted = true;
+        local = lobby_local_user_by_string(state, inv->to);
+        EOS_LOG_INFO("Lobby invite %s auto-accepted (lobby %s)", inv->invite_id, inv->lobby_id);
+        if (!state->platform || !state->platform->callbacks) {
+            continue;
+        }
+        for (e = state->invite_accepted_notifications; e; e = e->next) {
+            EOS_Lobby_LobbyInviteAcceptedCallbackInfo info;
+            memset(&info, 0, sizeof(info));
+            info.ClientData = e->client_data;
+            info.InviteId = stable_lobby_id(inv->invite_id);
+            info.LocalUserId = local;
+            info.TargetUserId = EOS_ProductUserId_FromString(inv->from);
+            info.LobbyId = stable_lobby_id(inv->lobby_id);
+            callback_queue_push(state->platform->callbacks, e->callback, &info, sizeof(info));
+        }
+    }
+}
+
+EOS_DECLARE_FUNC(void) EOS_Lobby_SendInvite(EOS_HLobby Handle, const EOS_Lobby_SendInviteOptions* Options,
+                                            void* ClientData, const EOS_Lobby_OnSendInviteCallback CompletionDelegate) {
+    LobbyState* state = (LobbyState*)Handle;
+    EOS_Lobby_SendInviteCallbackInfo info;
+
+    memset(&info, 0, sizeof(info));
+    info.ClientData = ClientData;
+    info.ResultCode = EOS_InvalidParameters;
+
+    if (!state || state->magic != LOBBY_STATE_MAGIC || !Options || !Options->LobbyId || !Options->TargetUserId) {
+        goto done;
+    }
+    info.LobbyId = stable_lobby_id(Options->LobbyId);
+    if (!find_local_lobby_by_id(state, Options->LobbyId)) {
+        info.ResultCode = EOS_NotFound;
+        goto done;
+    }
+    {
+        LobbyInviteWire w;
+        memset(&w, 0, sizeof(w));
+        generate_lobby_id(w.invite_id, sizeof(w.invite_id));
+        strncpy(w.lobby_id, Options->LobbyId, LOBBY_ID_LEN);
+        puid_to_string(Options->LocalUserId ? Options->LocalUserId : lobby_any_local_user(state),
+                       w.from, sizeof(w.from));
+        puid_to_string(Options->TargetUserId, w.to, sizeof(w.to));
+        /* UDP broadcast: send twice; the invitee drops duplicates by invite id. */
+        discovery_broadcast_raw(state->discovery, MSG_LOBBY_INVITE, (const uint8_t*)&w, (int)sizeof(w));
+        discovery_broadcast_raw(state->discovery, MSG_LOBBY_INVITE, (const uint8_t*)&w, (int)sizeof(w));
+        EOS_LOG_INFO("Lobby invite %s sent: lobby %s from %s to %s", w.invite_id, w.lobby_id, w.from, w.to);
+        lobby_request_announce(state);  /* make sure the invitee hears the lobby soon */
+    }
+    info.ResultCode = EOS_Success;
+
+done:
+    if (CompletionDelegate && state && state->platform && state->platform->callbacks) {
+        callback_queue_push(state->platform->callbacks, (void*)CompletionDelegate, &info, sizeof(info));
+    }
+}
+
 static void lobby_to_session(const Lobby* lobby, Session* s) {
     int i;
     memset(s, 0, sizeof(*s));
@@ -659,6 +878,12 @@ LobbyState* lobby_create(PlatformState* platform) {
     discovery_set_broadcast_addr(state->discovery, broadcast_addr);
     /* Owner and members announce the same lobby id: keep one cache entry per sender. */
     discovery_set_key_by_source(state->discovery, true);
+    /* LAN invites arrive as a custom message type on the lobby port. */
+    discovery_set_raw_handler(state->discovery, lobby_on_discovery_raw, state);
+    {
+        const char* aa = getenv("EOSLAN_AUTO_ACCEPT_INVITES");
+        state->auto_accept_invites = !(aa && aa[0] == '0');
+    }
 
     EOS_LOG_INFO("LobbyState created with LAN discovery: port=%u, broadcast=%s, interval=%ums",
                  lobby_port, broadcast_addr, state->announce_interval_ms);
@@ -735,6 +960,7 @@ void lobby_tick(LobbyState* state) {
     }
 
     lobby_sync_timeouts(state, now);
+    lobby_process_invites(state, now);
 
     /* Convert the discovery cache into discovered_lobbies. We update in place
      * keyed by lobby id and never reorder/remove entries: a discovered lobby's
@@ -1614,15 +1840,22 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_CopyLobbyDetailsHandleByInviteId(
     const EOS_Lobby_CopyLobbyDetailsHandleByInviteIdOptions* Options,
     EOS_HLobbyDetails* OutLobbyDetailsHandle
 ) {
-    /* The LAN emulator has no invite system, so there is no invite->lobby map.
-     * Palworld LAN discovery uses search + CopySearchResultByIndex instead. */
-    (void)Handle;
-    (void)Options;
+    /* Invites arrive over the LAN (see "LAN lobby invites"). */
+    LobbyState* state = (LobbyState*)Handle;
+    LobbyInvite* inv;
     if (OutLobbyDetailsHandle) {
         *OutLobbyDetailsHandle = NULL;
     }
-    EOS_LOG_DEBUG("CopyLobbyDetailsHandleByInviteId: no invites in LAN mode");
-    return EOS_NotFound;
+    if (!state || state->magic != LOBBY_STATE_MAGIC || !Options || !Options->InviteId || !OutLobbyDetailsHandle) {
+        return EOS_InvalidParameters;
+    }
+    inv = lobby_find_invite(state, Options->InviteId);
+    if (!inv) {
+        EOS_LOG_WARN("CopyLobbyDetailsHandleByInviteId: unknown invite %s", Options->InviteId);
+        return EOS_NotFound;
+    }
+    return lobby_copy_details(state, inv->lobby_id, lobby_local_user_by_string(state, inv->to),
+                              OutLobbyDetailsHandle);
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Lobby_CopyLobbyDetailsHandleByUiEventId(
