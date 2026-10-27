@@ -714,9 +714,13 @@ EOS_EResult EOS_P2P_SendPacket(
         return EOS_Success;
     }
 
-    // No established connection
-    if (Options->bDisableAutoAcceptConnection) {
-        EOS_LOG_WARN("P2P_SendPacket: No connection and auto-accept disabled");
+    // No established connection.
+    // bDisableAutoAcceptConnection only means "don't implicitly ACCEPT a peer's
+    // pending request by sending to it"; real EOS still sends a connection request
+    // to a peer we have no connection with. Returnal's client sends this way and
+    // never calls AcceptConnection, so bailing out here meant it never reached the host.
+    if (Options->bDisableAutoAcceptConnection && conn && conn->state == CONN_STATE_PENDING) {
+        EOS_LOG_DEBUG("P2P_SendPacket: peer request pending app accept, not auto-accepting");
         return EOS_NoConnection;
     }
 
