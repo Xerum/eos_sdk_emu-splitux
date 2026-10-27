@@ -205,9 +205,12 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CreateSessionModification(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion < EOS_SESSIONS_CREATESESSIONMODIFICATION_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
+    EOS_LOG_INFO("CreateSessionModification: ApiVersion=%d Session=%s Bucket=%s MaxPlayers=%u",
+                 Options->ApiVersion, Options->SessionName ? Options->SessionName : "(null)",
+                 Options->BucketId ? Options->BucketId : "(null)", Options->MaxPlayers);
 
     if (!Options->SessionName || !Options->BucketId || !OutSessionModificationHandle) {
         return EOS_InvalidParameters;
@@ -242,15 +245,17 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CreateSessionModification(
         EOS_ProductUserId_ToString(Options->LocalUserId,
                                    mod->session.owner_id_string, &owner_len);
     }
-    mod->session.presence_enabled = (Options->bPresenceEnabled == EOS_TRUE);
-    mod->session.sanctions_enabled = (Options->bSanctionsEnabled == EOS_TRUE);
+    // Games built against older SDK headers (Remnant II) pass older option
+    // structs: bPresenceEnabled exists from v2, SessionId v3, bSanctionsEnabled v4.
+    mod->session.presence_enabled = Options->ApiVersion >= 2 && Options->bPresenceEnabled == EOS_TRUE;
+    mod->session.sanctions_enabled = Options->ApiVersion >= 4 && Options->bSanctionsEnabled == EOS_TRUE;
     mod->session.state = EOS_OSS_Pending;
     mod->session.permission_level = EOS_OSPF_PublicAdvertised;  // Default
     mod->session.join_in_progress_allowed = true;  // Default
     mod->session.invites_allowed = true;  // Default
 
     // Generate session ID if not provided
-    if (Options->SessionId && strlen(Options->SessionId) > 0) {
+    if (Options->ApiVersion >= 3 && Options->SessionId && strlen(Options->SessionId) > 0) {
         strncpy(mod->session.session_id, Options->SessionId, sizeof(mod->session.session_id) - 1);
     } else {
         generate_session_id(mod->session.session_id, sizeof(mod->session.session_id));
@@ -271,7 +276,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_UpdateSessionModification(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion < EOS_SESSIONS_UPDATESESSIONMODIFICATION_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 
@@ -314,7 +319,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_UpdateSession(
         goto queue_callback;
     }
 
-    if (!Options || Options->ApiVersion < EOS_SESSIONS_UPDATESESSION_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         goto queue_callback;
     }
 
@@ -416,7 +421,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_DestroySession(
         goto queue_callback;
     }
 
-    if (!Options || Options->ApiVersion < EOS_SESSIONS_DESTROYSESSION_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         goto queue_callback;
     }
 
@@ -472,7 +477,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_StartSession(
         goto queue_callback;
     }
 
-    if (!Options || Options->ApiVersion < EOS_SESSIONS_STARTSESSION_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         goto queue_callback;
     }
 
@@ -514,7 +519,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_EndSession(
         goto queue_callback;
     }
 
-    if (!Options || Options->ApiVersion < EOS_SESSIONS_ENDSESSION_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         goto queue_callback;
     }
 
@@ -561,7 +566,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_JoinSession(
         goto queue_callback;
     }
 
-    if (!Options || Options->ApiVersion < EOS_SESSIONS_JOINSESSION_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         goto queue_callback;
     }
 
@@ -594,7 +599,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_JoinSession(
     s->valid = true;
     s->created_at = get_time_ms();
     s->last_updated = s->created_at;
-    s->presence_enabled = (Options->bPresenceEnabled == EOS_TRUE);
+    s->presence_enabled = Options->ApiVersion >= 2 && Options->bPresenceEnabled == EOS_TRUE;
 
     // Register the host's P2P endpoint (carried in the session's host_address)
     // against the host's puid, so EOS-P2P SendPacket to the owner routes to the
@@ -635,7 +640,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_RegisterPlayers(
         goto queue_callback;
     }
 
-    if (!Options || Options->ApiVersion < EOS_SESSIONS_REGISTERPLAYERS_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         goto queue_callback;
     }
 
@@ -708,7 +713,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_UnregisterPlayers(
         goto queue_callback;
     }
 
-    if (!Options || Options->ApiVersion < EOS_SESSIONS_UNREGISTERPLAYERS_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         goto queue_callback;
     }
 
@@ -775,7 +780,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CreateSessionSearch(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion < EOS_SESSIONS_CREATESESSIONSEARCH_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 
@@ -810,7 +815,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CopyActiveSessionHandle(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion < EOS_SESSIONS_COPYACTIVESESSIONHANDLE_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 

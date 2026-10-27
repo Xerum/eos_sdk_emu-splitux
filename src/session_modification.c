@@ -1,6 +1,7 @@
 #include "eos/eos_sessions.h"
 #include "eos/eos_sessions_types.h"
 #include "internal/sessions_internal.h"
+#include "internal/logging.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -9,14 +10,14 @@
 EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetBucketId(
     EOS_HSessionModification Handle,
     const EOS_SessionModification_SetBucketIdOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionModificationHandle* mod = (SessionModificationHandle*)Handle;
 
     if (!mod || mod->magic != 0x534D4F44) {
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion < EOS_SESSIONMODIFICATION_SETBUCKETID_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 
@@ -33,14 +34,14 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetBucketId(
 EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetHostAddress(
     EOS_HSessionModification Handle,
     const EOS_SessionModification_SetHostAddressOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionModificationHandle* mod = (SessionModificationHandle*)Handle;
 
     if (!mod || mod->magic != 0x534D4F44) {
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion < EOS_SESSIONMODIFICATION_SETHOSTADDRESS_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 
@@ -57,14 +58,14 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetHostAddress(
 EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetPermissionLevel(
     EOS_HSessionModification Handle,
     const EOS_SessionModification_SetPermissionLevelOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionModificationHandle* mod = (SessionModificationHandle*)Handle;
 
     if (!mod || mod->magic != 0x534D4F44) {
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion < EOS_SESSIONMODIFICATION_SETPERMISSIONLEVEL_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 
@@ -76,14 +77,14 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetPermissionLevel(
 EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetJoinInProgressAllowed(
     EOS_HSessionModification Handle,
     const EOS_SessionModification_SetJoinInProgressAllowedOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionModificationHandle* mod = (SessionModificationHandle*)Handle;
 
     if (!mod || mod->magic != 0x534D4F44) {
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion < EOS_SESSIONMODIFICATION_SETJOININPROGRESSALLOWED_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 
@@ -95,14 +96,14 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetJoinInProgressAllowed(
 EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetMaxPlayers(
     EOS_HSessionModification Handle,
     const EOS_SessionModification_SetMaxPlayersOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionModificationHandle* mod = (SessionModificationHandle*)Handle;
 
     if (!mod || mod->magic != 0x534D4F44) {
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion < EOS_SESSIONMODIFICATION_SETMAXPLAYERS_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 
@@ -118,14 +119,14 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetMaxPlayers(
 EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetInvitesAllowed(
     EOS_HSessionModification Handle,
     const EOS_SessionModification_SetInvitesAllowedOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionModificationHandle* mod = (SessionModificationHandle*)Handle;
 
     if (!mod || mod->magic != 0x534D4F44) {
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion < EOS_SESSIONMODIFICATION_SETINVITESALLOWED_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 
@@ -137,14 +138,14 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetInvitesAllowed(
 EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_AddAttribute(
     EOS_HSessionModification Handle,
     const EOS_SessionModification_AddAttributeOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionModificationHandle* mod = (SessionModificationHandle*)Handle;
 
     if (!mod || mod->magic != 0x534D4F44) {
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion < EOS_SESSIONMODIFICATION_ADDATTRIBUTE_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 
@@ -209,14 +210,14 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_AddAttribute(
 EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_RemoveAttribute(
     EOS_HSessionModification Handle,
     const EOS_SessionModification_RemoveAttributeOptions* Options
-) {
+) { EOS_LOG_TRACE("ENTER");
     SessionModificationHandle* mod = (SessionModificationHandle*)Handle;
 
     if (!mod || mod->magic != 0x534D4F44) {
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion < EOS_SESSIONMODIFICATION_REMOVEATTRIBUTE_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 
@@ -239,7 +240,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_RemoveAttribute(
     return EOS_NotFound;
 }
 
-EOS_DECLARE_FUNC(void) EOS_SessionModification_Release(EOS_HSessionModification Handle) {
+EOS_DECLARE_FUNC(void) EOS_SessionModification_Release(EOS_HSessionModification Handle) { EOS_LOG_TRACE("ENTER");
     SessionModificationHandle* mod = (SessionModificationHandle*)Handle;
 
     if (mod && mod->magic == 0x534D4F44) {

@@ -82,7 +82,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionDetails_CopyInfo(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion < EOS_SESSIONDETAILS_COPYINFO_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 
@@ -130,7 +130,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_SessionDetails_GetSessionAttributeCount(
         return 0;
     }
 
-    if (!Options || Options->ApiVersion < EOS_SESSIONDETAILS_GETSESSIONATTRIBUTECOUNT_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         return 0;
     }
 
@@ -148,7 +148,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionDetails_CopySessionAttributeByIndex(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion < EOS_SESSIONDETAILS_COPYSESSIONATTRIBUTEBYINDEX_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 
@@ -225,7 +225,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionDetails_CopySessionAttributeByKey(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion < EOS_SESSIONDETAILS_COPYSESSIONATTRIBUTEBYKEY_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 
@@ -317,7 +317,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_ActiveSession_CopyInfo(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion < EOS_ACTIVESESSION_COPYINFO_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 
@@ -371,7 +371,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_ActiveSession_GetRegisteredPlayerCount(
         return 0;
     }
 
-    if (!Options || Options->ApiVersion < EOS_ACTIVESESSION_GETREGISTEREDPLAYERCOUNT_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         return 0;
     }
 
@@ -392,7 +392,7 @@ EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_ActiveSession_GetRegisteredPlayerByIndex
         return NULL;
     }
 
-    if (!Options || Options->ApiVersion < EOS_ACTIVESESSION_GETREGISTEREDPLAYERBYINDEX_API_LATEST) {
+    if (!Options || Options->ApiVersion < 1) {
         return NULL;
     }
 

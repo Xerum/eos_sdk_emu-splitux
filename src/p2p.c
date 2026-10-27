@@ -682,7 +682,7 @@ EOS_EResult EOS_P2P_SendPacket(
 
     // Be lenient about ApiVersion - Palworld is built against an older P2P API
     // and a strict equality check would reject every send.
-    if (Options->ApiVersion < EOS_P2P_SENDPACKET_API_LATEST) {
+    if (Options->ApiVersion < 1) {
         EOS_LOG_DEBUG("P2P_SendPacket: ApiVersion=%d (latest=%d) - proceeding",
                       Options->ApiVersion, EOS_P2P_SENDPACKET_API_LATEST);
     }
@@ -719,7 +719,7 @@ EOS_EResult EOS_P2P_SendPacket(
     // pending request by sending to it"; real EOS still sends a connection request
     // to a peer we have no connection with. Returnal's client sends this way and
     // never calls AcceptConnection, so bailing out here meant it never reached the host.
-    if (Options->bDisableAutoAcceptConnection && conn && conn->state == CONN_STATE_PENDING) {
+    if (Options->ApiVersion >= 2 && Options->bDisableAutoAcceptConnection && conn && conn->state == CONN_STATE_PENDING) {
         EOS_LOG_DEBUG("P2P_SendPacket: peer request pending app accept, not auto-accepting");
         return EOS_NoConnection;
     }
@@ -801,7 +801,7 @@ EOS_EResult EOS_P2P_GetNextReceivedPacketSize(
         return EOS_InvalidParameters;
     }
 
-    if (Options->ApiVersion < EOS_P2P_GETNEXTRECEIVEDPACKETSIZE_API_LATEST) {
+    if (Options->ApiVersion < 1) {
         EOS_LOG_DEBUG("P2P_GetNextReceivedPacketSize: ApiVersion=%d - proceeding",
                       Options->ApiVersion);
     }
@@ -850,7 +850,7 @@ EOS_EResult EOS_P2P_ReceivePacket(
         return EOS_InvalidParameters;
     }
 
-    if (Options->ApiVersion < EOS_P2P_RECEIVEPACKET_API_LATEST) {
+    if (Options->ApiVersion < 1) {
         EOS_LOG_DEBUG("P2P_ReceivePacket: ApiVersion=%d - proceeding", Options->ApiVersion);
     }
 
@@ -914,7 +914,7 @@ EOS_NotificationId EOS_P2P_AddNotifyPeerConnectionRequest(
         return EOS_INVALID_NOTIFICATIONID;
     }
 
-    if (Options->ApiVersion < EOS_P2P_ADDNOTIFYPEERCONNECTIONREQUEST_API_LATEST) {
+    if (Options->ApiVersion < 1) {
         return EOS_INVALID_NOTIFICATIONID;
     }
 
@@ -973,7 +973,7 @@ EOS_NotificationId EOS_P2P_AddNotifyPeerConnectionEstablished(
         return EOS_INVALID_NOTIFICATIONID;
     }
 
-    if (Options->ApiVersion < EOS_P2P_ADDNOTIFYPEERCONNECTIONESTABLISHED_API_LATEST) {
+    if (Options->ApiVersion < 1) {
         return EOS_INVALID_NOTIFICATIONID;
     }
 
@@ -1032,7 +1032,7 @@ EOS_NotificationId EOS_P2P_AddNotifyPeerConnectionInterrupted(
         return EOS_INVALID_NOTIFICATIONID;
     }
 
-    if (Options->ApiVersion < EOS_P2P_ADDNOTIFYPEERCONNECTIONINTERRUPTED_API_LATEST) {
+    if (Options->ApiVersion < 1) {
         return EOS_INVALID_NOTIFICATIONID;
     }
 
@@ -1091,7 +1091,7 @@ EOS_NotificationId EOS_P2P_AddNotifyPeerConnectionClosed(
         return EOS_INVALID_NOTIFICATIONID;
     }
 
-    if (Options->ApiVersion < EOS_P2P_ADDNOTIFYPEERCONNECTIONCLOSED_API_LATEST) {
+    if (Options->ApiVersion < 1) {
         return EOS_INVALID_NOTIFICATIONID;
     }
 
@@ -1148,7 +1148,7 @@ EOS_EResult EOS_P2P_AcceptConnection(
         return EOS_InvalidParameters;
     }
 
-    if (Options->ApiVersion < EOS_P2P_ACCEPTCONNECTION_API_LATEST) {
+    if (Options->ApiVersion < 1) {
         EOS_LOG_DEBUG("P2P_AcceptConnection: ApiVersion=%d (latest=%d) - proceeding",
                       Options->ApiVersion, EOS_P2P_ACCEPTCONNECTION_API_LATEST);
     }
@@ -1220,7 +1220,7 @@ EOS_EResult EOS_P2P_CloseConnection(
         return EOS_InvalidParameters;
     }
 
-    if (Options->ApiVersion < EOS_P2P_CLOSECONNECTION_API_LATEST) {
+    if (Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 
@@ -1269,7 +1269,7 @@ EOS_EResult EOS_P2P_CloseConnections(
         return EOS_InvalidParameters;
     }
 
-    if (Options->ApiVersion < EOS_P2P_CLOSECONNECTIONS_API_LATEST) {
+    if (Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 
@@ -1304,7 +1304,7 @@ void EOS_P2P_QueryNATType(
 
     if (!Options || !CompletionDelegate) return;
 
-    if (Options->ApiVersion < EOS_P2P_QUERYNATTYPE_API_LATEST) return;
+    if (Options->ApiVersion < 1) return;
 
     // For LAN, NAT type is always Open
     state->nat_type = EOS_NAT_Open;
@@ -1335,7 +1335,7 @@ EOS_EResult EOS_P2P_GetNATType(
         return EOS_InvalidParameters;
     }
 
-    if (Options->ApiVersion < EOS_P2P_GETNATTYPE_API_LATEST) {
+    if (Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 
@@ -1360,7 +1360,7 @@ EOS_EResult EOS_P2P_SetRelayControl(
         return EOS_InvalidParameters;
     }
 
-    if (Options->ApiVersion < EOS_P2P_SETRELAYCONTROL_API_LATEST) {
+    if (Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 
@@ -1383,7 +1383,7 @@ EOS_EResult EOS_P2P_GetRelayControl(
         return EOS_InvalidParameters;
     }
 
-    if (Options->ApiVersion < EOS_P2P_GETRELAYCONTROL_API_LATEST) {
+    if (Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 
@@ -1404,7 +1404,7 @@ EOS_EResult EOS_P2P_SetPortRange(
         return EOS_InvalidParameters;
     }
 
-    if (Options->ApiVersion < EOS_P2P_SETPORTRANGE_API_LATEST) {
+    if (Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 
@@ -1429,7 +1429,7 @@ EOS_EResult EOS_P2P_GetPortRange(
         return EOS_InvalidParameters;
     }
 
-    if (Options->ApiVersion < EOS_P2P_GETPORTRANGE_API_LATEST) {
+    if (Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 
@@ -1451,7 +1451,7 @@ EOS_EResult EOS_P2P_SetPacketQueueSize(
         return EOS_InvalidParameters;
     }
 
-    if (Options->ApiVersion < EOS_P2P_SETPACKETQUEUESIZE_API_LATEST) {
+    if (Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 
@@ -1477,7 +1477,7 @@ EOS_EResult EOS_P2P_GetPacketQueueInfo(
         return EOS_InvalidParameters;
     }
 
-    if (Options->ApiVersion < EOS_P2P_GETPACKETQUEUEINFO_API_LATEST) {
+    if (Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 
@@ -1506,7 +1506,7 @@ EOS_NotificationId EOS_P2P_AddNotifyIncomingPacketQueueFull(
         return EOS_INVALID_NOTIFICATIONID;
     }
 
-    if (Options->ApiVersion < EOS_P2P_ADDNOTIFYINCOMINGPACKETQUEUEFULL_API_LATEST) {
+    if (Options->ApiVersion < 1) {
         return EOS_INVALID_NOTIFICATIONID;
     }
 
@@ -1560,7 +1560,7 @@ EOS_EResult EOS_P2P_ClearPacketQueue(
         return EOS_InvalidParameters;
     }
 
-    if (Options->ApiVersion < EOS_P2P_CLEARPACKETQUEUE_API_LATEST) {
+    if (Options->ApiVersion < 1) {
         return EOS_InvalidParameters;
     }
 
