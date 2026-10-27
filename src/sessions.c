@@ -20,7 +20,9 @@
 // Helper functions
 
 void generate_session_id(char* buffer, size_t buffer_size) {
-    static const char charset[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    // 32 lowercase hex like real EOS (and Nemirtingas): Remnant II matches the
+    // EOS session to its Steam lobby by this id and silently skips other forms.
+    static const char charset[] = "0123456789abcdef";
     size_t len = (buffer_size > 32) ? 32 : buffer_size - 1;
 
     srand((unsigned int)time(NULL) ^ (unsigned int)get_time_ms());

@@ -34,7 +34,7 @@ static void connect_init_instance_id(ConnectState* state) {
     // joiner resolved (UserKeyHandle:-1 / E011).
     const char* user = getenv("EOSLAN_USERNAME");
     if (!user || !user[0]) user = "LAN_Player";
-    eosdet_fill_hex(state->instance_id, 16, eosdet_seed("puid:", user), "0123456789ABCDEF");
+    eosdet_fill_hex(state->instance_id, 16, eosdet_seed("puid:", user), "0123456789abcdef");
 
     EOS_LOG_DEBUG("Generated instance ID: %s", state->instance_id);
 }
@@ -580,12 +580,12 @@ EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_ProductUserId_FromString(const char* Pro
         }
     }
 
-    // Normalize (uppercase) into a local buffer first so interning compares the
-    // canonical form.
+    // Normalize (lowercase, the form real EOS ids use) into a local buffer first so
+    // interning compares the canonical form.
     char norm[PRODUCT_USER_ID_LENGTH + 1];
     for (size_t i = 0; i < PRODUCT_USER_ID_LENGTH; i++) {
         char c = ProductUserIdString[i];
-        norm[i] = (c >= 'a' && c <= 'f') ? (char)(c - 32) : c;
+        norm[i] = (c >= 'A' && c <= 'F') ? (char)(c + 32) : c;
     }
     norm[PRODUCT_USER_ID_LENGTH] = '\0';
 
