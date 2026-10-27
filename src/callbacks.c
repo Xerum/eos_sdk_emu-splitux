@@ -110,8 +110,18 @@ void callback_queue_push(
     const void* info,
     size_t info_size
 ) {
-    // Immediate callback (delay = 0)
-    callback_queue_push_delayed(queue, callback_fn, info, info_size, 0);
+    // EOSLAN_CALLBACK_DELAY_MS: deliver completions a little later, like real EOS
+    // (network round trip) and Nemirtingas (~100ms). Remnant II's EOSPlus session
+    // destroy never finished when the EOS completion arrived on the very next tick,
+    // so the Steam lobby join that follows never started.
+    static int delay_ms = -1;
+    if (delay_ms < 0) {
+        const char* v = getenv("EOSLAN_CALLBACK_DELAY_MS");
+        delay_ms = (v && v[0]) ? atoi(v) : 0;
+        if (delay_ms < 0) delay_ms = 0;
+        if (delay_ms > 0) EOS_LOG_INFO("Callback delay: %d ms (EOSLAN_CALLBACK_DELAY_MS)", delay_ms);
+    }
+    callback_queue_push_delayed(queue, callback_fn, info, info_size, (uint32_t)delay_ms);
 }
 
 void callback_queue_push_delayed(
