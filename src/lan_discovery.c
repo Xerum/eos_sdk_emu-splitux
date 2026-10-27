@@ -66,6 +66,32 @@ struct DiscoveryService {
     uint8_t send_buffer[MAX_PACKET_SIZE];
 };
 
+// sendto with error logging: a host whose announces never reached the LAN
+// (Remnant II on one PC) failed silently before.
+static int ds_send_logged(DiscoveryService* ds, const char* buf, int len, int flags,
+                          const struct sockaddr* to, int tolen) {
+    static int fails = 0, oks = 0;
+    int r = (int)ds_send_logged(ds, buf, len, flags, to, tolen);
+    char ip[INET_ADDRSTRLEN] = "?";
+    const struct sockaddr_in* sin = (const struct sockaddr_in*)to;
+    inet_ntop(AF_INET, &sin->sin_addr, ip, sizeof(ip));
+    if (r < 0) {
+        fails++;
+#ifdef _WIN32
+        int err = WSAGetLastError();
+#else
+        int err = errno;
+#endif
+        if (fails <= 5 || fails % 200 == 0) {
+            EOS_LOG_WARN("discovery sendto %s:%u len=%d FAILED err=%d (failures=%d)",
+                         ip, (unsigned)ntohs(sin->sin_port), len, err, fails);
+        }
+    } else if (oks < 3) {
+        oks++;
+        EOS_LOG_INFO("discovery sendto %s:%u len=%d ok", ip, (unsigned)ntohs(sin->sin_port), len);
+    }
+    return r;
+}
 // Helper function to serialize session attribute
 static int serialize_attribute(uint8_t* buf, const SessionAttribute* attr) {
     int offset = 0;
@@ -356,14 +382,14 @@ void discovery_broadcast_user(DiscoveryService* ds, const UserBeacon* user) {
     dest.sin_family = AF_INET;
     dest.sin_port = htons(ds->port);
     inet_pton(AF_INET, ds->broadcast_addr, &dest.sin_addr);
-    sendto(ds->socket_fd, (const char*)buf, offset, 0, (struct sockaddr*)&dest, sizeof(dest));
+    ds_send_logged(ds, (const char*)buf, offset, 0, (struct sockaddr*)&dest, sizeof(dest));
 
     if (ds->localhost_mode) {
         struct sockaddr_in lo = {0};
         lo.sin_family = AF_INET;
         lo.sin_port = htons(ds->port);
         inet_pton(AF_INET, "127.255.255.255", &lo.sin_addr);
-        sendto(ds->socket_fd, (const char*)buf, offset, 0, (struct sockaddr*)&lo, sizeof(lo));
+        ds_send_logged(ds, (const char*)buf, offset, 0, (struct sockaddr*)&lo, sizeof(lo));
     }
 }
 
@@ -559,7 +585,7 @@ void discovery_broadcast_session(DiscoveryService* ds, const Session* session) {
     dest.sin_port = htons(ds->port);
     inet_pton(AF_INET, ds->broadcast_addr, &dest.sin_addr);
 
-    sendto(ds->socket_fd, (const char*)buf, offset, 0, (struct sockaddr*)&dest, sizeof(dest));
+    ds_send_logged(ds, (const char*)buf, offset, 0, (struct sockaddr*)&dest, sizeof(dest));
 
     // If localhost mode, also send to loopback broadcast for Wine/Proton support
     if (ds->localhost_mode) {
@@ -569,7 +595,7 @@ void discovery_broadcast_session(DiscoveryService* ds, const Session* session) {
         // Use loopback broadcast (127.255.255.255) instead of unicast (127.0.0.1)
         // This allows packets to reach all sockets bound to the port on loopback
         inet_pton(AF_INET, "127.255.255.255", &lo.sin_addr);
-        sendto(ds->socket_fd, (const char*)buf, offset, 0, (struct sockaddr*)&lo, sizeof(lo));
+        ds_send_logged(ds, (const char*)buf, offset, 0, (struct sockaddr*)&lo, sizeof(lo));
     }
 }
 
@@ -600,7 +626,7 @@ void discovery_send_query(DiscoveryService* ds, const char* bucket_filter) {
     dest.sin_port = htons(ds->port);
     inet_pton(AF_INET, ds->broadcast_addr, &dest.sin_addr);
 
-    sendto(ds->socket_fd, (const char*)buf, offset, 0, (struct sockaddr*)&dest, sizeof(dest));
+    ds_send_logged(ds, (const char*)buf, offset, 0, (struct sockaddr*)&dest, sizeof(dest));
 
     // If localhost mode, also send to loopback broadcast for Wine/Proton support
     if (ds->localhost_mode) {
@@ -609,7 +635,7 @@ void discovery_send_query(DiscoveryService* ds, const char* bucket_filter) {
         lo.sin_port = htons(ds->port);
         // Use loopback broadcast (127.255.255.255) instead of unicast (127.0.0.1)
         inet_pton(AF_INET, "127.255.255.255", &lo.sin_addr);
-        sendto(ds->socket_fd, (const char*)buf, offset, 0, (struct sockaddr*)&lo, sizeof(lo));
+        ds_send_logged(ds, (const char*)buf, offset, 0, (struct sockaddr*)&lo, sizeof(lo));
     }
 }
 
@@ -722,14 +748,14 @@ void discovery_broadcast_raw(DiscoveryService* ds, uint8_t msg_type, const uint8
     dest.sin_family = AF_INET;
     dest.sin_port = htons(ds->port);
     inet_pton(AF_INET, ds->broadcast_addr, &dest.sin_addr);
-    sendto(ds->socket_fd, (const char*)buf, offset, 0, (struct sockaddr*)&dest, sizeof(dest));
+    ds_send_logged(ds, (const char*)buf, offset, 0, (struct sockaddr*)&dest, sizeof(dest));
 
     if (ds->localhost_mode) {
         struct sockaddr_in lo = {0};
         lo.sin_family = AF_INET;
         lo.sin_port = htons(ds->port);
         inet_pton(AF_INET, "127.255.255.255", &lo.sin_addr);
-        sendto(ds->socket_fd, (const char*)buf, offset, 0, (struct sockaddr*)&lo, sizeof(lo));
+        ds_send_logged(ds, (const char*)buf, offset, 0, (struct sockaddr*)&lo, sizeof(lo));
     }
 }
 
