@@ -543,7 +543,9 @@ void lobby_tick(LobbyState* state) {
         Lobby* slot = NULL;
         int i;
 
-        session_to_lobby(&cache[c], &cand);
+        const Session* ds_entry = discovery_get_session_at(state->discovery, c);
+        if (!ds_entry) continue;
+        session_to_lobby(ds_entry, &cand);
 
         /* Skip echoes of our own lobbies. */
         if (find_local_lobby_by_id(state, cand.lobby_id)) {

@@ -668,6 +668,15 @@ Session* discovery_get_sessions(DiscoveryService* ds, int* out_count) {
     return &ds->cache[0].session;
 }
 
+// The cache holds CachedSession entries (Session + source_ip + timestamp), so the
+// pointer from discovery_get_sessions() must NOT be indexed as a Session array:
+// entry [1] onward would be read at the wrong stride (lobby id = previous entry's
+// source IP, then garbage). Callers iterate with this accessor instead.
+const Session* discovery_get_session_at(DiscoveryService* ds, int index) {
+    if (!ds || index < 0 || index >= ds->cache_count) return NULL;
+    return &ds->cache[index].session;
+}
+
 const Session* discovery_find_cached_session(DiscoveryService* ds, const char* session_id) {
     if (!ds || !session_id) return NULL;
     for (int i = 0; i < ds->cache_count; i++) {

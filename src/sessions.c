@@ -183,7 +183,8 @@ void sessions_tick(SessionsState* state) {
         ? MAX_DISCOVERED_SESSIONS : discovered_count;
 
     for (int i = 0; i < state->discovered_session_count; i++) {
-        state->discovered_sessions[i] = discovered[i];
+        const Session* ds_entry = discovery_get_session_at(state->discovery, i);
+        if (ds_entry) state->discovered_sessions[i] = *ds_entry;
     }
 
     if (state->discovered_session_count > 0) {

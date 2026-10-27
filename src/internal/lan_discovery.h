@@ -42,6 +42,9 @@ void discovery_poll(DiscoveryService* ds);
  */
 Session* discovery_get_sessions(DiscoveryService* ds, int* out_count);
 
+/** Get cached session #index (0..count-1). Use this to iterate; do not index the discovery_get_sessions() pointer. */
+const Session* discovery_get_session_at(DiscoveryService* ds, int index);
+
 /**
  * Find a single discovered session by its session_id in the live cache, or NULL.
  * Used to re-pull the freshest advertised attributes for a session the game is

@@ -59,6 +59,9 @@ void discovery_poll(DiscoveryService* ds);
  */
 Session* discovery_get_sessions(DiscoveryService* ds, int* out_count);
 
+/** Get cached session #index (0..count-1). Use this to iterate; do not index the discovery_get_sessions() pointer. */
+const Session* discovery_get_session_at(DiscoveryService* ds, int index);
+
 /**
  * Clear all discovered sessions.
  */

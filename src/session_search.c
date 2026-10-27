@@ -301,7 +301,8 @@ EOS_DECLARE_FUNC(void) EOS_SessionSearch_Find(
             state->discovered_session_count = (discovered_count > MAX_DISCOVERED_SESSIONS)
                 ? MAX_DISCOVERED_SESSIONS : discovered_count;
             for (int j = 0; j < state->discovered_session_count; j++) {
-                state->discovered_sessions[j] = discovered[j];
+                const Session* ds_entry = discovery_get_session_at(state->discovery, j);
+                if (ds_entry) state->discovered_sessions[j] = *ds_entry;
             }
 
             if (state->discovered_session_count > 0) {
