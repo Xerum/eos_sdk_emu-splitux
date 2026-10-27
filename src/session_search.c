@@ -20,6 +20,27 @@
 
 // Helper function to check if a session matches a search parameter
 static bool session_matches_param(const Session* session, const SearchParameter* param) {
+    // Built-in EOS search keys (EOS_SESSIONS_SEARCH_*) refer to session state, not
+    // to attributes the game added (Redpoint/Smalland filters on minslotsavailable).
+    int open_slots = (int)session->max_players - session->registered_player_count;
+    if (strcmp(param->key, "minslotsavailable") == 0 && param->type == EOS_AT_INT64) {
+        return open_slots >= param->value.as_int64;
+    }
+    if (strcmp(param->key, "emptyonly") == 0) {
+        return session->registered_player_count == 0;
+    }
+    if (strcmp(param->key, "nonemptyonly") == 0) {
+        return session->registered_player_count > 0;
+    }
+    if (strcmp(param->key, "bucket") == 0 && param->type == EOS_AT_STRING) {
+        bool has_attr = false;
+        for (int i = 0; i < session->attribute_count; i++) {
+            if (strcmp(session->attributes[i].key, "bucket") == 0) { has_attr = true; break; }
+        }
+        if (!has_attr) {
+            return strcmp(session->bucket_id, param->value.as_string) == 0;
+        }
+    }
     // Find attribute in session
     const SessionAttribute* attr = NULL;
     for (int i = 0; i < session->attribute_count; i++) {
