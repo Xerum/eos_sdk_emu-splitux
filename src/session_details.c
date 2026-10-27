@@ -241,6 +241,13 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionDetails_CopySessionAttributeByIndex(
     out_attr->Data = attr_data;
     out_attr->AdvertisementType = attr->advertisement;
 
+    switch (attr->type) {
+        case EOS_AT_BOOLEAN: EOS_LOG_DEBUG("CopySessionAttribute: %s=%s", attr->key, attr->value.as_bool ? "true" : "false"); break;
+        case EOS_AT_INT64:   EOS_LOG_DEBUG("CopySessionAttribute: %s=%lld", attr->key, (long long)attr->value.as_int64); break;
+        case EOS_AT_DOUBLE:  EOS_LOG_DEBUG("CopySessionAttribute: %s=%g", attr->key, attr->value.as_double); break;
+        default:             EOS_LOG_DEBUG("CopySessionAttribute: %s='%s'", attr->key, attr->value.as_string); break;
+    }
+
     *OutSessionAttribute = out_attr;
     return EOS_Success;
 }
