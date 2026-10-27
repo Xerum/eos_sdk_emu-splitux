@@ -46,4 +46,7 @@ void auth_auto_login(void);
 // Fire all stored login status notifications
 void auth_fire_login_notifications(EOS_ELoginStatus prev, EOS_ELoginStatus current);
 
+// EOSLAN_EXTERNAL_AUTH=fail: no Epic account for external (Steam) logins
+bool auth_external_disabled(void);
+
 #endif // EOS_LAN_AUTH_INTERNAL_H

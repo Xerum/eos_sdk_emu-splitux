@@ -218,7 +218,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_Login(
 
         // For Steam auth (Type=18), ensure auth is set up as if Auth_Login completed
         // This makes EpicAccountId available immediately when game queries it
-        if (Options->Credentials->Type == 18) {  // EOS_ECT_STEAM_SESSION_TICKET
+        if (Options->Credentials->Type == 18 && !auth_external_disabled()) {  // EOS_ECT_STEAM_SESSION_TICKET
             extern AuthState g_auth_state;
             if (!g_auth_state.logged_in) {
                 extern void auth_auto_login(void);
@@ -285,7 +285,8 @@ EOS_DECLARE_FUNC(void) EOS_Connect_Login(
 
     // For Steam auth (Type=18), mark that Steam login completed
     // This flag will trigger notification firing when game registers for LoginStatusChanged
-    if (Options->Credentials && Options->Credentials->Type == 18 && info.ResultCode == EOS_Success) {
+    if (Options->Credentials && Options->Credentials->Type == 18 && info.ResultCode == EOS_Success &&
+        !auth_external_disabled()) {
         EOS_LOG_INFO(">>> STEAM AUTH COMPLETED <<<");
         EOS_LOG_INFO("    Setting steam_login_completed = true");
         EOS_LOG_INFO("    g_auth_state.account_id = %s (ptr=%p)",

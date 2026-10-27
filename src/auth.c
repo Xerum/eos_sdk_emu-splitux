@@ -135,6 +135,15 @@ void auth_auto_login(void) {
                  g_auth_state.account_id.id_string, (void*)&g_auth_state.account_id);
 }
 
+// EOSLAN_EXTERNAL_AUTH=fail: refuse Epic-account logins with an external
+// (Steam) token, as Epic does for an unlinked account. Remnant II then logs in
+// through Connect with its Steam ticket only and hosts sessions without an Epic
+// account; with a fake Epic account it never creates a session at all.
+bool auth_external_disabled(void) {
+    const char* v = getenv("EOSLAN_EXTERNAL_AUTH");
+    return v && strcmp(v, "fail") == 0;
+}
+
 EOS_DECLARE_FUNC(void) EOS_Auth_Login(EOS_HAuth Handle, const EOS_Auth_LoginOptions* Options, void* ClientData, const EOS_Auth_OnLoginCallback CompletionDelegate) {
     EOS_LOG_INFO(">>> EOS_Auth_Login CALLED <<<");
     EOS_LOG_INFO("    Handle=%p, Options=%p, ClientData=%p, Callback=%p",
@@ -151,6 +160,23 @@ EOS_DECLARE_FUNC(void) EOS_Auth_Login(EOS_HAuth Handle, const EOS_Auth_LoginOpti
         } else {
             EOS_LOG_INFO("    Credentials=NULL");
         }
+    }
+
+    if (Options && Options->Credentials && Options->Credentials->Type == EOS_LCT_ExternalAuth &&
+        auth_external_disabled()) {
+        EOS_LOG_INFO("    Auth_Login REFUSED - ExternalAuth disabled (EOSLAN_EXTERNAL_AUTH=fail)");
+        if (CompletionDelegate) {
+            EOS_Auth_LoginCallbackInfo info = {0};
+            info.ResultCode = EOS_InvalidUser;
+            info.ClientData = ClientData;
+            CallbackQueue* q = get_callback_queue();
+            if (q) {
+                callback_queue_push(q, (void*)CompletionDelegate, &info, sizeof(info));
+            } else {
+                CompletionDelegate(&info);
+            }
+        }
+        return;
     }
 
     // Generate fake Epic account
