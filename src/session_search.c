@@ -4,6 +4,10 @@
 #include "internal/callbacks.h"
 #include "internal/lan_discovery.h"
 #include "internal/logging.h"
+#include "lan_common.h"
+
+// A host that has not re-announced for this long is gone (announce interval ~2s)
+#define SESSION_STALE_MS 8000
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -359,6 +363,16 @@ EOS_DECLARE_FUNC(void) EOS_SessionSearch_Find(
         Session* s = &state->discovered_sessions[i];
 
         if (!s->valid) {
+            continue;
+        }
+
+        // Drop sessions whose host stopped announcing (game closed or restarted):
+        // hosts re-announce every ~2s, and a stale cached copy made Remnant II pick
+        // a session with no matching Steam lobby and hang at "Connecting".
+        uint64_t seen = state->discovery ? discovery_get_received_at(state->discovery, i) : 0;
+        if (seen && get_time_ms() - seen > SESSION_STALE_MS) {
+            EOS_LOG_DEBUG("SessionSearch_Find: skip stale '%s' (last announce %llu ms ago)",
+                          s->session_id, (unsigned long long)(get_time_ms() - seen));
             continue;
         }
 
