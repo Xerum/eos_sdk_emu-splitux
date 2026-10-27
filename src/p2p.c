@@ -1306,19 +1306,20 @@ void EOS_P2P_QueryNATType(
 
     if (Options->ApiVersion < 1) return;
 
-    // For LAN, NAT type is always Open
-    state->nat_type = EOS_NAT_Open;
+    // Report Moderate like Nemirtingas: with Open, Remnant II never starts its EOS P2P
+    // connection to the host (stays at "Connecting").
+    state->nat_type = EOS_NAT_Moderate;
     state->nat_queried = true;
 
     // TODO: Queue callback via callback system
     EOS_P2P_OnQueryNATTypeCompleteInfo info = {0};
     info.ResultCode = EOS_Success;
     info.ClientData = ClientData;
-    info.NATType = EOS_NAT_Open;
+    info.NATType = state->nat_type;
 
     // Call immediately for now (should be queued)
     CompletionDelegate(&info);
-    EOS_LOG_DEBUG("P2P: NAT type query completed (Open)");
+    EOS_LOG_DEBUG("P2P: NAT type query completed (Moderate)");
 }
 
 EOS_EResult EOS_P2P_GetNATType(
@@ -1339,11 +1340,8 @@ EOS_EResult EOS_P2P_GetNATType(
         return EOS_InvalidParameters;
     }
 
-    if (!state->nat_queried) {
-        return EOS_NotFound;
-    }
-
-    *OutNATType = state->nat_type;
+    // Answer even before QueryNATType (Nemirtingas does too)
+    *OutNATType = state->nat_queried ? state->nat_type : EOS_NAT_Moderate;
     return EOS_Success;
 }
 
