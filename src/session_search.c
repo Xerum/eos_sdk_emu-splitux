@@ -441,7 +441,12 @@ EOS_DECLARE_FUNC(void) EOS_SessionSearch_Find(
     }
 
     search->search_complete = true;
-    info.ResultCode = (search->result_count > 0) ? EOS_Success : EOS_NotFound;
+    // Real EOS reports NotFound only for a lookup by session id / target user; a
+    // parameter search without matches is Success with 0 results (Redpoint/Smalland
+    // shows a network error on NotFound).
+    info.ResultCode = (search->result_count > 0 ||
+                       (search->target_session_id[0] == '\0' && search->target_user_id == NULL))
+                      ? EOS_Success : EOS_NotFound;
     EOS_LOG_INFO("SessionSearch_Find: %d discovered, %d params, %d result(s)",
                  state->discovered_session_count, search->param_count, search->result_count);
 

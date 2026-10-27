@@ -53,7 +53,8 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetHostAddress(
     // joiners must get back in EOS_SessionDetails_Info::HostAddress, but our own
     // host_address has to stay the LAN ip:port of the P2P transport. Keep the
     // game's value in a hidden attribute that travels with the announce.
-    if (strncmp(Options->HostAddress, "EOS:", 4) == 0) {
+    // Also Redpoint's "<puid>.<socket>.eosp2p:<channel>" form (Smalland).
+    if (strncmp(Options->HostAddress, "EOS:", 4) == 0 || strstr(Options->HostAddress, ".eosp2p") != NULL) {
         SessionAttribute* attr = NULL;
         for (int i = 0; i < mod->session.attribute_count; i++) {
             if (strcmp(mod->session.attributes[i].key, LAN_HOSTADDR_ATTR) == 0) {
