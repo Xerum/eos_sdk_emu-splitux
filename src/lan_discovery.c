@@ -71,7 +71,7 @@ struct DiscoveryService {
 static int ds_send_logged(DiscoveryService* ds, const char* buf, int len, int flags,
                           const struct sockaddr* to, int tolen) {
     static int fails = 0, oks = 0;
-    int r = (int)ds_send_logged(ds, buf, len, flags, to, tolen);
+    int r = (int)sendto(ds->socket_fd, buf, len, flags, to, tolen);
     char ip[INET_ADDRSTRLEN] = "?";
     const struct sockaddr_in* sin = (const struct sockaddr_in*)to;
     inet_ntop(AF_INET, &sin->sin_addr, ip, sizeof(ip));
