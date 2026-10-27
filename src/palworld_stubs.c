@@ -155,7 +155,13 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_EpicAccountId_IsValid(EOS_EpicAccountId Id) { EOS
         return EOS_TRUE;
     }
 
-    // Check if valid by magic number
+    // Remote (friend/peer) ids are valid on their own: requiring our own Epic login
+    // made every friend invalid with EOSLAN_EXTERNAL_AUTH=fail and Remnant II crashed
+    // on it. Only our own id follows our login state.
+    if (details->magic == EAID_MAGIC && Id != (EOS_EpicAccountId)&g_auth_state.account_id) {
+        EOS_LOG_INFO("    -> Result: TRUE (valid magic, remote id)");
+        return EOS_TRUE;
+    }
     if (details->magic == EAID_MAGIC && g_auth_state.logged_in) {
         EOS_LOG_INFO("    -> Result: TRUE (valid magic, logged in)");
         return EOS_TRUE;

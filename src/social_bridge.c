@@ -754,12 +754,6 @@ EOS_DECLARE_FUNC(void) EOS_Friends_QueryFriends(EOS_HFriends Handle, const EOS_F
 
 EOS_DECLARE_FUNC(int32_t) EOS_Friends_GetFriendsCount(EOS_HFriends Handle, const EOS_Friends_GetFriendsCountOptions* Options) { EOS_LOG_TRACE("ENTER");
     (void)Options;
-    // Without an Epic account (EOSLAN_EXTERNAL_AUTH=fail) there are no Epic friends:
-    // Remnant II crashes on a friend id while its own Epic login was refused.
-    if (auth_external_disabled()) {
-        EOS_LOG_INFO(">>> EOS_Friends_GetFriendsCount -> 0 (no Epic account)");
-        return 0;
-    }
     PlatformState* p = (PlatformState*)Handle;
     refresh_peers(p);
     EOS_LOG_INFO(">>> EOS_Friends_GetFriendsCount -> %d", g_peer_count);
