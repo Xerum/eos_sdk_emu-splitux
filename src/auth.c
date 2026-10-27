@@ -241,7 +241,7 @@ EOS_DECLARE_FUNC(EOS_EpicAccountId) EOS_Auth_GetLoggedInAccountByIndex(EOS_HAuth
 
 EOS_DECLARE_FUNC(EOS_ELoginStatus) EOS_Auth_GetLoginStatus(EOS_HAuth Handle, EOS_EpicAccountId LocalUserId) {
     EOS_ELoginStatus status = g_auth_state.logged_in ? EOS_LS_LoggedIn : EOS_LS_NotLoggedIn;
-    EOS_LOG_INFO(">>> Auth_GetLoginStatus CALLED - LocalUserId=%p, logged_in=%d, returning %s",
+    EOS_LOG_TRACE(">>> Auth_GetLoginStatus CALLED - LocalUserId=%p, logged_in=%d, returning %s",
                  (void*)LocalUserId, g_auth_state.logged_in,
                  status == EOS_LS_LoggedIn ? "LoggedIn" : "NotLoggedIn");
     return status;

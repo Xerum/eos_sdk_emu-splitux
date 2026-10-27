@@ -12,6 +12,7 @@
 #include <string.h>
 
 extern void xerum_queue_completion(void* handle, void* callback_fn, const void* info, size_t info_size);
+extern void xerum_complete_generic(void* handle, void* callback_fn, void* client_data, int result);
 #include "eos/eos_stats.h"
 #include "eos/eos_leaderboards.h"
 #include "eos/eos_anticheatserver.h"
@@ -672,7 +673,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_PlayerDataStorage_GetFileMetadataCount(EOS_HPl
 }
 
 EOS_DECLARE_FUNC(void) EOS_PlayerDataStorage_QueryFile(EOS_HPlayerDataStorage Handle, const EOS_PlayerDataStorage_QueryFileOptions* QueryFileOptions, void* ClientData, const EOS_PlayerDataStorage_OnQueryFileCompleteCallback CompletionCallback) {
-    (void)0;
+    xerum_complete_generic(Handle, (void*)CompletionCallback, ClientData, EOS_NotFound);
 }
 
 /* EOS_PresenceModification_DeleteData / SetJoinInfo — implemented in src/social_bridge.c */
@@ -881,7 +882,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_TitleStorage_GetFileMetadataCount(EOS_HTitleStora
 }
 
 EOS_DECLARE_FUNC(void) EOS_TitleStorage_QueryFile(EOS_HTitleStorage Handle, const EOS_TitleStorage_QueryFileOptions* Options, void* ClientData, const EOS_TitleStorage_OnQueryFileCompleteCallback CompletionCallback) {
-    (void)0;
+    xerum_complete_generic(Handle, (void*)CompletionCallback, ClientData, EOS_NotFound);
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_UI_AcknowledgeEventId(EOS_HUI Handle, const EOS_UI_AcknowledgeEventIdOptions* Options) {
@@ -1037,6 +1038,6 @@ EOS_DECLARE_FUNC(EOS_OnlinePlatformType) EOS_UserInfo_GetLocalPlatformType(EOS_H
 }
 
 EOS_DECLARE_FUNC(void) EOS_UserInfo_QueryUserInfoByExternalAccount(EOS_HUserInfo Handle, const EOS_UserInfo_QueryUserInfoByExternalAccountOptions* Options, void* ClientData, const EOS_UserInfo_OnQueryUserInfoByExternalAccountCallback CompletionDelegate) {
-    (void)0;
+    xerum_complete_generic(Handle, (void*)CompletionDelegate, ClientData, EOS_NotFound);
 }
 
