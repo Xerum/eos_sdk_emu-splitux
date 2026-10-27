@@ -1142,7 +1142,7 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_CreateLobby(
 
     /* Be lenient about ApiVersion (the Lobby CreateLobby struct has been
      * revised many times); the game may have been built against an older SDK. */
-    if (Options->ApiVersion != EOS_LOBBY_CREATELOBBY_API_LATEST) {
+    if (Options->ApiVersion < EOS_LOBBY_CREATELOBBY_API_LATEST) {
         EOS_LOG_WARN("CreateLobby ApiVersion=%d (expected %d) - proceeding",
                      Options->ApiVersion, EOS_LOBBY_CREATELOBBY_API_LATEST);
     }

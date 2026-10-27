@@ -16,7 +16,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetBucketId(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONMODIFICATION_SETBUCKETID_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONMODIFICATION_SETBUCKETID_API_LATEST) {
         return EOS_InvalidParameters;
     }
 
@@ -40,7 +40,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetHostAddress(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONMODIFICATION_SETHOSTADDRESS_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONMODIFICATION_SETHOSTADDRESS_API_LATEST) {
         return EOS_InvalidParameters;
     }
 
@@ -64,7 +64,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetPermissionLevel(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONMODIFICATION_SETPERMISSIONLEVEL_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONMODIFICATION_SETPERMISSIONLEVEL_API_LATEST) {
         return EOS_InvalidParameters;
     }
 
@@ -83,7 +83,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetJoinInProgressAllowed(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONMODIFICATION_SETJOININPROGRESSALLOWED_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONMODIFICATION_SETJOININPROGRESSALLOWED_API_LATEST) {
         return EOS_InvalidParameters;
     }
 
@@ -102,7 +102,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetMaxPlayers(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONMODIFICATION_SETMAXPLAYERS_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONMODIFICATION_SETMAXPLAYERS_API_LATEST) {
         return EOS_InvalidParameters;
     }
 
@@ -125,7 +125,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_SetInvitesAllowed(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONMODIFICATION_SETINVITESALLOWED_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONMODIFICATION_SETINVITESALLOWED_API_LATEST) {
         return EOS_InvalidParameters;
     }
 
@@ -144,7 +144,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_AddAttribute(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONMODIFICATION_ADDATTRIBUTE_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONMODIFICATION_ADDATTRIBUTE_API_LATEST) {
         return EOS_InvalidParameters;
     }
 
@@ -216,7 +216,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_RemoveAttribute(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONMODIFICATION_REMOVEATTRIBUTE_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONMODIFICATION_REMOVEATTRIBUTE_API_LATEST) {
         return EOS_InvalidParameters;
     }
 

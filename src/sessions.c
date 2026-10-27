@@ -205,7 +205,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CreateSessionModification(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONS_CREATESESSIONMODIFICATION_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONS_CREATESESSIONMODIFICATION_API_LATEST) {
         return EOS_InvalidParameters;
     }
 
@@ -271,7 +271,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_UpdateSessionModification(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONS_UPDATESESSIONMODIFICATION_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONS_UPDATESESSIONMODIFICATION_API_LATEST) {
         return EOS_InvalidParameters;
     }
 
@@ -314,7 +314,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_UpdateSession(
         goto queue_callback;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONS_UPDATESESSION_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONS_UPDATESESSION_API_LATEST) {
         goto queue_callback;
     }
 
@@ -416,7 +416,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_DestroySession(
         goto queue_callback;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONS_DESTROYSESSION_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONS_DESTROYSESSION_API_LATEST) {
         goto queue_callback;
     }
 
@@ -472,7 +472,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_StartSession(
         goto queue_callback;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONS_STARTSESSION_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONS_STARTSESSION_API_LATEST) {
         goto queue_callback;
     }
 
@@ -514,7 +514,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_EndSession(
         goto queue_callback;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONS_ENDSESSION_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONS_ENDSESSION_API_LATEST) {
         goto queue_callback;
     }
 
@@ -561,7 +561,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_JoinSession(
         goto queue_callback;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONS_JOINSESSION_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONS_JOINSESSION_API_LATEST) {
         goto queue_callback;
     }
 
@@ -635,7 +635,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_RegisterPlayers(
         goto queue_callback;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONS_REGISTERPLAYERS_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONS_REGISTERPLAYERS_API_LATEST) {
         goto queue_callback;
     }
 
@@ -708,7 +708,7 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_UnregisterPlayers(
         goto queue_callback;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONS_UNREGISTERPLAYERS_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONS_UNREGISTERPLAYERS_API_LATEST) {
         goto queue_callback;
     }
 
@@ -775,7 +775,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CreateSessionSearch(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONS_CREATESESSIONSEARCH_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONS_CREATESESSIONSEARCH_API_LATEST) {
         return EOS_InvalidParameters;
     }
 
@@ -810,7 +810,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CopyActiveSessionHandle(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONS_COPYACTIVESESSIONHANDLE_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONS_COPYACTIVESESSIONHANDLE_API_LATEST) {
         return EOS_InvalidParameters;
     }
 

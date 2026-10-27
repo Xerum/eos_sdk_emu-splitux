@@ -96,7 +96,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_SetSessionId(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONSEARCH_SETSESSIONID_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONSEARCH_SETSESSIONID_API_LATEST) {
         return EOS_InvalidParameters;
     }
 
@@ -120,7 +120,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_SetTargetUserId(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONSEARCH_SETTARGETUSERID_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONSEARCH_SETTARGETUSERID_API_LATEST) {
         return EOS_InvalidParameters;
     }
 
@@ -139,7 +139,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_SetParameter(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONSEARCH_SETPARAMETER_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONSEARCH_SETPARAMETER_API_LATEST) {
         return EOS_InvalidParameters;
     }
 
@@ -195,7 +195,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_RemoveParameter(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONSEARCH_REMOVEPARAMETER_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONSEARCH_REMOVEPARAMETER_API_LATEST) {
         return EOS_InvalidParameters;
     }
 
@@ -229,7 +229,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_SetMaxResults(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONSEARCH_SETMAXSEARCHRESULTS_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONSEARCH_SETMAXSEARCHRESULTS_API_LATEST) {
         return EOS_InvalidParameters;
     }
 
@@ -258,7 +258,7 @@ EOS_DECLARE_FUNC(void) EOS_SessionSearch_Find(
         goto queue_callback;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONSEARCH_FIND_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONSEARCH_FIND_API_LATEST) {
         goto queue_callback;
     }
 
@@ -385,7 +385,7 @@ EOS_DECLARE_FUNC(uint32_t) EOS_SessionSearch_GetSearchResultCount(
         return 0;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONSEARCH_GETSEARCHRESULTCOUNT_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONSEARCH_GETSEARCHRESULTCOUNT_API_LATEST) {
         return 0;
     }
 
@@ -407,7 +407,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionSearch_CopySearchResultByIndex(
         return EOS_InvalidParameters;
     }
 
-    if (!Options || Options->ApiVersion != EOS_SESSIONSEARCH_COPYSEARCHRESULTBYINDEX_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_SESSIONSEARCH_COPYSEARCHRESULTBYINDEX_API_LATEST) {
         return EOS_InvalidParameters;
     }
 

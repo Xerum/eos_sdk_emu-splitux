@@ -324,7 +324,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_Logout(
         return;
     }
 
-    if (!Options || Options->ApiVersion != EOS_CONNECT_LOGOUT_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_CONNECT_LOGOUT_API_LATEST) {
         EOS_LOG_ERROR("Invalid LogoutOptions");
         if (CompletionDelegate) {
             EOS_Connect_LogoutCallbackInfo info = {0};
@@ -384,7 +384,7 @@ EOS_DECLARE_FUNC(void) EOS_Connect_CreateUser(
         return;
     }
 
-    if (!Options || Options->ApiVersion != EOS_CONNECT_CREATEUSER_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_CONNECT_CREATEUSER_API_LATEST) {
         EOS_LOG_ERROR("Invalid CreateUserOptions");
         if (CompletionDelegate) {
             EOS_Connect_CreateUserCallbackInfo info = {0};
@@ -631,7 +631,7 @@ EOS_DECLARE_FUNC(EOS_NotificationId) EOS_Connect_AddNotifyLoginStatusChanged(
         return EOS_INVALID_NOTIFICATIONID;
     }
 
-    if (!Options || Options->ApiVersion != EOS_CONNECT_ADDNOTIFYLOGINSTATUSCHANGED_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_CONNECT_ADDNOTIFYLOGINSTATUSCHANGED_API_LATEST) {
         EOS_LOG_ERROR("Invalid AddNotifyLoginStatusChanged options");
         return EOS_INVALID_NOTIFICATIONID;
     }

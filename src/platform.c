@@ -21,7 +21,7 @@ static char g_product_name[128] = {0};
 static char g_product_version[64] = {0};
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Initialize(const EOS_InitializeOptions* Options) {
-    if (!Options || Options->ApiVersion != EOS_INITIALIZE_API_LATEST) {
+    if (!Options || Options->ApiVersion < EOS_INITIALIZE_API_LATEST) {
         return EOS_InvalidParameters;
     }
 
