@@ -62,6 +62,7 @@ typedef struct UserBeacon {
     char join_info[PRESENCE_JOININFO_LEN];
     PresenceRecord records[MAX_PRESENCE_RECORDS];
     int record_count;
+    uint16_t p2p_port;                      // peer's P2P listen port (0 = unknown / older build)
     char source_ip[SOURCE_IP_LEN];
     uint64_t last_seen;
     bool valid;

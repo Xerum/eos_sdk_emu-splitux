@@ -10,6 +10,7 @@
 #include "lan_p2p.h"
 
 bool sessions_find_owner_address(SessionsState* state, const char* owner_puid, char* out, size_t out_len);
+bool sessions_find_user_beacon_address(SessionsState* state, const char* puid, char* out, size_t out_len);
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -654,13 +655,20 @@ void p2p_tick(P2PState* state) {
             // No JoinSession registered the peer (Remnant II joins through the Steam
             // lobby and travels straight to EOS:<puid>): look the owner up in the
             // LAN session announces, which carry the host's P2P ip:port.
-            if (!state->platform || !state->platform->sessions ||
-                !sessions_find_owner_address(state->platform->sessions, conn->peer_id_string,
-                                             conn->peer_address, sizeof(conn->peer_address))) {
+            // Deadzone has no EOS session at all (RallyHere sessions): fall back to the
+            // peer's user beacon, which carries its P2P port.
+            if (!state->platform || !state->platform->sessions) continue;
+            if (sessions_find_owner_address(state->platform->sessions, conn->peer_id_string,
+                                            conn->peer_address, sizeof(conn->peer_address))) {
+                EOS_LOG_INFO("P2P: resolved %s -> %s from session announce",
+                             conn->peer_id_string, conn->peer_address);
+            } else if (sessions_find_user_beacon_address(state->platform->sessions, conn->peer_id_string,
+                                                         conn->peer_address, sizeof(conn->peer_address))) {
+                EOS_LOG_INFO("P2P: resolved %s -> %s from user beacon",
+                             conn->peer_id_string, conn->peer_address);
+            } else {
                 continue;  // no target yet
             }
-            EOS_LOG_INFO("P2P: resolved %s -> %s from session announce",
-                         conn->peer_id_string, conn->peer_address);
         }
 
         if ((now - state->last_connect_send) >= P2P_CONNECT_RESEND_MS) {

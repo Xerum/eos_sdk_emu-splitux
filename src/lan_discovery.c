@@ -377,6 +377,10 @@ void discovery_broadcast_user(DiscoveryService* ds, const UserBeacon* user) {
         strncpy((char*)(buf + offset), user->records[i].value, PRESENCE_VALUE_LEN - 1);
         offset += PRESENCE_VALUE_LEN;
     }
+    // trailing field (newer builds): P2P listen port, so peers can reach EOS:<puid>
+    // without an EOS session (Deadzone: sessions run on RallyHere). Older parsers stop
+    // after the presence records and ignore it.
+    *(uint16_t*)(buf + offset) = htons(user->p2p_port); offset += 2;
 
     struct sockaddr_in dest = {0};
     dest.sin_family = AF_INET;
@@ -417,6 +421,10 @@ static bool parse_user_beacon(const uint8_t* buf, int len, UserBeacon* user) {
         user->records[i].value[PRESENCE_VALUE_LEN - 1] = '\0';
         offset += PRESENCE_VALUE_LEN;
         user->record_count++;
+    }
+    if (offset + 2 <= len) {
+        user->p2p_port = ntohs(*(const uint16_t*)(buf + offset));
+        offset += 2;
     }
     user->valid = true;
     return true;

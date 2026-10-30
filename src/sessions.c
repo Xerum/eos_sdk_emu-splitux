@@ -7,6 +7,7 @@
 #include "internal/logging.h"
 #include "internal/p2p_internal.h"  // advertise/register the host's P2P endpoint
 #include "lan_common.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -46,6 +47,22 @@ bool sessions_find_owner_address(SessionsState* state, const char* owner_puid, c
     }
     return false;
 }
+// P2P endpoint of a peer from its LAN user beacon (source ip + advertised P2P port).
+// Used when the game connects to EOS:<puid> without any EOS session (Deadzone).
+bool sessions_find_user_beacon_address(SessionsState* state, const char* puid, char* out, size_t out_len) {
+    if (!state || !state->discovery || !puid || !puid[0] || !out || out_len == 0) return false;
+    int count = 0;
+    UserBeacon* users = discovery_get_users(state->discovery, &count);
+    for (int i = 0; i < count; i++) {
+        const UserBeacon* ub = &users[i];
+        if (ub->valid && ub->p2p_port != 0 && ub->source_ip[0] && _stricmp(ub->puid, puid) == 0) {
+            snprintf(out, out_len, "%s:%u", ub->source_ip, (unsigned)ub->p2p_port);
+            return true;
+        }
+    }
+    return false;
+}
+
 Session* find_local_session_by_name(SessionsState* state, const char* name) {
     if (!state || !name) {
         return NULL;

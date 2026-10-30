@@ -32,6 +32,7 @@
 #include "internal/connect_internal.h"
 #include "internal/auth_internal.h"
 #include "internal/callbacks.h"
+#include "internal/p2p_internal.h"
 #include "internal/logging.h"
 #include "lan_common.h"
 #include <string.h>
@@ -600,7 +601,9 @@ static NotifiedPeer* find_notified(const char* epic_id) {
 // of whether we host a session — peers' join UIs need to see us either way.
 static void broadcast_own_beacon(PlatformState* p) {
     if (!p || !p->sessions || !p->sessions->discovery) return;
-    if (!g_auth_state.logged_in) return;
+    // Games that refuse the Epic Auth login (EOSLAN_EXTERNAL_AUTH=fail) and only use
+    // Connect still need to be reachable: announce as soon as we have a ProductUserId.
+    if (!g_auth_state.logged_in && !local_product_id_string(p)) return;
     static uint64_t last_beacon_ms = 0;
     uint64_t now = get_time_ms();
     if (now - last_beacon_ms < 2000) return;
@@ -617,6 +620,7 @@ static void broadcast_own_beacon(PlatformState* p) {
     strncpy(ub.join_info, g_local_presence.join_info, sizeof(ub.join_info) - 1);
     memcpy(ub.records, g_local_presence.records, sizeof(ub.records));
     ub.record_count = g_local_presence.record_count;
+    if (p->p2p) ub.p2p_port = p2p_get_listen_port(p->p2p);
     ub.valid = true;
     discovery_broadcast_user(p->sessions->discovery, &ub);
 }
