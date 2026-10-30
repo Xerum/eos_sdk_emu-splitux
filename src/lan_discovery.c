@@ -68,8 +68,8 @@ struct DiscoveryService {
 
 // sendto with error logging: a host whose announces never reached the LAN
 // (Remnant II on one PC) failed silently before.
-static int ds_send_logged(DiscoveryService* ds, const char* buf, int len, int flags,
-                          const struct sockaddr* to, int tolen) {
+static int ds_send_one(DiscoveryService* ds, const char* buf, int len, int flags,
+                       const struct sockaddr* to, int tolen) {
     static int fails = 0, oks = 0;
     int r = (int)sendto(ds->socket_fd, buf, len, flags, to, tolen);
     char ip[INET_ADDRSTRLEN] = "?";
@@ -89,6 +89,80 @@ static int ds_send_logged(DiscoveryService* ds, const char* buf, int len, int fl
     } else if (oks < 3) {
         oks++;
         EOS_LOG_INFO("discovery sendto %s:%u len=%d ok", ip, (unsigned)ntohs(sin->sin_port), len);
+    }
+    return r;
+}
+
+// Directed broadcast addresses of all other active IPv4 interfaces. Windows sends a
+// packet for 255.255.255.255 only over the interface with the best route (the LAN
+// card), so peers on a second network (ZeroTier, VPN) never heard our announces.
+// The interface Windows picks for 255.255.255.255 is left out, so every network
+// gets exactly one copy. Refreshed every 5 s (ZeroTier may come up later).
+#define MAX_IFACE_BROADCASTS 16
+static struct in_addr g_iface_bc[MAX_IFACE_BROADCASTS];
+static int g_iface_bc_count = 0;
+static uint64_t g_iface_bc_time = 0;
+
+static void refresh_iface_broadcasts(DiscoveryService* ds) {
+    uint64_t now = get_time_ms();
+    if (g_iface_bc_time != 0 && now - g_iface_bc_time < 5000) return;
+    g_iface_bc_time = now;
+#ifdef _WIN32
+    // local address of the interface Windows uses for the limited broadcast
+    struct sockaddr_in limited = {0}, chosen = {0};
+    limited.sin_family = AF_INET;
+    limited.sin_addr.s_addr = htonl(INADDR_BROADCAST);
+    DWORD bytes = 0;
+    if (WSAIoctl(ds->socket_fd, SIO_ROUTING_INTERFACE_QUERY, &limited, sizeof(limited),
+                 &chosen, sizeof(chosen), &bytes, NULL, NULL) != 0) {
+        chosen.sin_addr.s_addr = 0;
+    }
+
+    INTERFACE_INFO list[32];
+    bytes = 0;
+    if (WSAIoctl(ds->socket_fd, SIO_GET_INTERFACE_LIST, NULL, 0, list, sizeof(list),
+                 &bytes, NULL, NULL) != 0) {
+        return;  // keep the previous list
+    }
+    int count = 0;
+    char desc[256] = "";
+    int n = (int)(bytes / sizeof(INTERFACE_INFO));
+    for (int i = 0; i < n && count < MAX_IFACE_BROADCASTS; i++) {
+        u_long flags = list[i].iiFlags;
+        if (!(flags & IFF_UP) || (flags & IFF_LOOPBACK) || !(flags & IFF_BROADCAST)) continue;
+        uint32_t ip = list[i].iiAddress.AddressIn.sin_addr.s_addr;
+        uint32_t mask = list[i].iiNetmask.AddressIn.sin_addr.s_addr;
+        if (ip == 0 || mask == 0 || mask == 0xFFFFFFFFu) continue;
+        if ((ntohl(ip) & 0xFFFF0000u) == 0xA9FE0000u) continue;  // link-local 169.254/16
+        if (ip == chosen.sin_addr.s_addr) continue;              // already reached via 255.255.255.255
+        g_iface_bc[count].s_addr = ip | ~mask;
+        char a[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, &g_iface_bc[count], a, sizeof(a));
+        if (strlen(desc) + strlen(a) + 2 < sizeof(desc)) { strcat(desc, " "); strcat(desc, a); }
+        count++;
+    }
+    if (count != g_iface_bc_count) {
+        char c[INET_ADDRSTRLEN] = "?";
+        inet_ntop(AF_INET, &chosen.sin_addr, c, sizeof(c));
+        EOS_LOG_INFO("discovery: 255.255.255.255 goes via %s, extra interface broadcasts:%s",
+                     c, count ? desc : " none");
+    }
+    g_iface_bc_count = count;
+#endif
+}
+
+// Every send to 255.255.255.255 also goes to the other interfaces' broadcast addresses.
+static int ds_send_logged(DiscoveryService* ds, const char* buf, int len, int flags,
+                          const struct sockaddr* to, int tolen) {
+    int r = ds_send_one(ds, buf, len, flags, to, tolen);
+    const struct sockaddr_in* sin = (const struct sockaddr_in*)to;
+    if (sin->sin_family == AF_INET && sin->sin_addr.s_addr == htonl(INADDR_BROADCAST)) {
+        refresh_iface_broadcasts(ds);
+        for (int i = 0; i < g_iface_bc_count; i++) {
+            struct sockaddr_in d = *sin;
+            d.sin_addr = g_iface_bc[i];
+            ds_send_one(ds, buf, len, flags, (const struct sockaddr*)&d, sizeof(d));
+        }
     }
     return r;
 }
