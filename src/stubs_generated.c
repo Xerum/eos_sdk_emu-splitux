@@ -560,11 +560,13 @@ EOS_DECLARE_FUNC(void) EOS_Lobby_RemoveNotifySendLobbyNativeInviteRequested(EOS_
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Logging_SetCallback(EOS_LogMessageFunc Callback) { EOS_LOG_TRACE("ENTER");
-    return EOS_NotConfigured;
+    (void)Callback; /* xerum: real SDK returns Success; MW5 aborts its EOS init otherwise */
+    return EOS_Success;
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Logging_SetLogLevel(EOS_ELogCategory LogCategory, EOS_ELogLevel LogLevel) { EOS_LOG_TRACE("ENTER");
-    return EOS_NotConfigured;
+    (void)LogCategory; (void)LogLevel;
+    return EOS_Success;
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Mods_CopyModInfo(EOS_HMods Handle, const EOS_Mods_CopyModInfoOptions* Options, EOS_Mods_ModInfo ** OutEnumeratedMods) { EOS_LOG_TRACE("ENTER");
