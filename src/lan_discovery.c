@@ -100,8 +100,13 @@ static int ds_send_one(DiscoveryService* ds, const char* buf, int len, int flags
 // gets exactly one copy. Refreshed every 5 s (ZeroTier may come up later).
 #define MAX_IFACE_BROADCASTS 16
 static struct in_addr g_iface_bc[MAX_IFACE_BROADCASTS];
+static struct in_addr g_iface_ip[MAX_IFACE_BROADCASTS];   // own address on that interface
 static int g_iface_bc_count = 0;
 static uint64_t g_iface_bc_time = 0;
+static struct in_addr g_chosen_ip;                         // own address used for 255.255.255.255
+#define MAX_LOCAL_IPS 32
+static uint32_t g_local_ips[MAX_LOCAL_IPS];                // all own IPv4 addresses (network order)
+static int g_local_ip_count = 0;
 
 static void refresh_iface_broadcasts(DiscoveryService* ds) {
     uint64_t now = get_time_ms();
@@ -127,6 +132,14 @@ static void refresh_iface_broadcasts(DiscoveryService* ds) {
     int count = 0;
     char desc[256] = "";
     int n = (int)(bytes / sizeof(INTERFACE_INFO));
+    g_local_ip_count = 0;
+    for (int i = 0; i < n; i++) {
+        uint32_t ip = list[i].iiAddress.AddressIn.sin_addr.s_addr;
+        if (ip != 0 && !(list[i].iiFlags & IFF_LOOPBACK) && g_local_ip_count < MAX_LOCAL_IPS) {
+            g_local_ips[g_local_ip_count++] = ip;
+        }
+    }
+    g_chosen_ip = chosen.sin_addr;
     for (int i = 0; i < n && count < MAX_IFACE_BROADCASTS; i++) {
         u_long flags = list[i].iiFlags;
         if (!(flags & IFF_UP) || (flags & IFF_LOOPBACK) || !(flags & IFF_BROADCAST)) continue;
@@ -135,6 +148,7 @@ static void refresh_iface_broadcasts(DiscoveryService* ds) {
         if (ip == 0 || mask == 0 || mask == 0xFFFFFFFFu) continue;
         if ((ntohl(ip) & 0xFFFF0000u) == 0xA9FE0000u) continue;  // link-local 169.254/16
         if (ip == chosen.sin_addr.s_addr) continue;              // already reached via 255.255.255.255
+        g_iface_ip[count].s_addr = ip;
         g_iface_bc[count].s_addr = ip | ~mask;
         char a[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &g_iface_bc[count], a, sizeof(a));
@@ -151,20 +165,77 @@ static void refresh_iface_broadcasts(DiscoveryService* ds) {
 #endif
 }
 
+// Offset of Session.host_address in an MSG_ANNOUNCE packet: header (9) +
+// session_id (64) + session_name (256) + bucket_id (256); field is 64 bytes.
+#define ANNOUNCE_HOSTADDR_OFFSET (9 + 64 + 256 + 256)
+#define ANNOUNCE_HOSTADDR_LEN 64
+
+static bool is_local_ip(uint32_t ip) {
+    for (int i = 0; i < g_local_ip_count; i++) {
+        if (g_local_ips[i] == ip) return true;
+    }
+    return false;
+}
+
+// The announced host_address ("ip:port") uses the IP of one adapter (get_local_ip:
+// the first one). A peer on a second network (ZeroTier/VPN) cannot reach it, and a
+// peer's emulator connects exactly there ("Connecting" forever). Each interface
+// gets its own copy of the announce anyway, so rewrite the address to our own IP
+// on that interface - if it is one of our own addresses (lobby members re-announce
+// the owner's lobby with the owner's address; that one stays untouched).
+static int ds_send_iface(DiscoveryService* ds, const char* buf, int len, int flags,
+                         const struct sockaddr* to, int tolen, struct in_addr iface_ip) {
+    if (iface_ip.s_addr != 0 && len >= ANNOUNCE_HOSTADDR_OFFSET + ANNOUNCE_HOSTADDR_LEN &&
+        (uint8_t)buf[8] == MSG_ANNOUNCE) {
+        char addr[ANNOUNCE_HOSTADDR_LEN + 1];
+        memcpy(addr, buf + ANNOUNCE_HOSTADDR_OFFSET, ANNOUNCE_HOSTADDR_LEN);
+        addr[ANNOUNCE_HOSTADDR_LEN] = '\0';
+        char* colon = strchr(addr, ':');
+        if (colon && colon != addr && colon - addr < 16) {
+            char ipstr[16];
+            memcpy(ipstr, addr, (size_t)(colon - addr));
+            ipstr[colon - addr] = '\0';
+            struct in_addr announced;
+            if (inet_pton(AF_INET, ipstr, &announced) == 1 &&
+                announced.s_addr != iface_ip.s_addr && is_local_ip(announced.s_addr)) {
+                char* copy = (char*)malloc((size_t)len);
+                if (copy) {
+                    char own[INET_ADDRSTRLEN];
+                    inet_ntop(AF_INET, &iface_ip, own, sizeof(own));
+                    memcpy(copy, buf, (size_t)len);
+                    memset(copy + ANNOUNCE_HOSTADDR_OFFSET, 0, ANNOUNCE_HOSTADDR_LEN);
+                    snprintf(copy + ANNOUNCE_HOSTADDR_OFFSET, ANNOUNCE_HOSTADDR_LEN, "%s%s", own, colon);
+                    static int logged = 0;
+                    if (logged < 4) {
+                        logged++;
+                        EOS_LOG_INFO("discovery: announce host_address %s -> %s for interface %s",
+                                     addr, copy + ANNOUNCE_HOSTADDR_OFFSET, own);
+                    }
+                    int r = ds_send_one(ds, copy, len, flags, to, tolen);
+                    free(copy);
+                    return r;
+                }
+            }
+        }
+    }
+    return ds_send_one(ds, buf, len, flags, to, tolen);
+}
+
 // Every send to 255.255.255.255 also goes to the other interfaces' broadcast addresses.
 static int ds_send_logged(DiscoveryService* ds, const char* buf, int len, int flags,
                           const struct sockaddr* to, int tolen) {
-    int r = ds_send_one(ds, buf, len, flags, to, tolen);
     const struct sockaddr_in* sin = (const struct sockaddr_in*)to;
     if (sin->sin_family == AF_INET && sin->sin_addr.s_addr == htonl(INADDR_BROADCAST)) {
         refresh_iface_broadcasts(ds);
+        int r = ds_send_iface(ds, buf, len, flags, to, tolen, g_chosen_ip);
         for (int i = 0; i < g_iface_bc_count; i++) {
             struct sockaddr_in d = *sin;
             d.sin_addr = g_iface_bc[i];
-            ds_send_one(ds, buf, len, flags, (const struct sockaddr*)&d, sizeof(d));
+            ds_send_iface(ds, buf, len, flags, (const struct sockaddr*)&d, sizeof(d), g_iface_ip[i]);
         }
+        return r;
     }
-    return r;
+    return ds_send_one(ds, buf, len, flags, to, tolen);
 }
 // Helper function to serialize session attribute
 static int serialize_attribute(uint8_t* buf, const SessionAttribute* attr) {
