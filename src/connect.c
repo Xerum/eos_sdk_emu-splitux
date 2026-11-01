@@ -935,12 +935,49 @@ EOS_DECLARE_FUNC(EOS_ProductUserId) EOS_Connect_GetExternalAccountMapping(
     return NULL;
 }
 
+// xerum: external accounts (Steam). The ProductUserId's linked Steam account comes
+// from EOSLAN_STEAM_ID (local user) or the peer's LAN beacon (social bridge).
+extern int social_bridge_resolve_steam_by_puid(PlatformState* p, const char* puid,
+                                               const char** out_steam, const char** out_name);
+
+static int xerum_ext_lookup(EOS_HConnect Handle, EOS_ProductUserId target,
+                            const char** steam, const char** name) {
+    ConnectState* state = (ConnectState*)Handle;
+    if (!state || state->magic != CONNECT_MAGIC || !target || !EOS_ProductUserId_IsValid(target)) return 0;
+    const char* puid = ((EOS_ProductUserIdDetails*)target)->id_string;
+    int ok = social_bridge_resolve_steam_by_puid(state->platform, puid, steam, name);
+    EOS_LOG_INFO("ExternalAccount lookup %s -> %s", puid, ok ? *steam : "(none)");
+    return ok;
+}
+
+static char* xerum_dup(const char* s) {
+    size_t n = strlen(s ? s : "") + 1;
+    char* d = (char*)malloc(n);
+    if (d) memcpy(d, s ? s : "", n);
+    return d;
+}
+
+static EOS_EResult xerum_ext_copy(EOS_ProductUserId target, const char* steam, const char* name,
+                                  EOS_Connect_ExternalAccountInfo** out) {
+    if (!out) return EOS_InvalidParameters;
+    EOS_Connect_ExternalAccountInfo* info = (EOS_Connect_ExternalAccountInfo*)calloc(1, sizeof(*info));
+    if (!info) { *out = NULL; return EOS_UnexpectedError; }
+    info->ApiVersion = EOS_CONNECT_EXTERNALACCOUNTINFO_API_LATEST;
+    info->ProductUserId = target;
+    info->DisplayName = xerum_dup(name);
+    info->AccountId = xerum_dup(steam);
+    info->AccountIdType = EOS_EAT_STEAM;
+    info->LastLoginTime = EOS_CONNECT_TIME_UNDEFINED;
+    *out = info;
+    return EOS_Success;
+}
+
 EOS_DECLARE_FUNC(uint32_t) EOS_Connect_GetProductUserExternalAccountCount(
     EOS_HConnect Handle,
     const EOS_Connect_GetProductUserExternalAccountCountOptions* Options
 ) { EOS_LOG_TRACE("ENTER");
-    EOS_LOG_API_ENTER();
-    return 0;
+    const char *steam = NULL, *name = NULL;
+    return (Options && xerum_ext_lookup(Handle, Options->TargetUserId, &steam, &name)) ? 1u : 0u;
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_CopyProductUserExternalAccountByIndex(
@@ -948,9 +985,12 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_CopyProductUserExternalAccountByIndex(
     const EOS_Connect_CopyProductUserExternalAccountByIndexOptions* Options,
     EOS_Connect_ExternalAccountInfo** OutExternalAccountInfo
 ) { EOS_LOG_TRACE("ENTER");
-    EOS_LOG_API_ENTER();
-    EOS_LOG_WARN("CopyProductUserExternalAccountByIndex not supported in LAN emulator");
-    return EOS_NotFound;
+    if (OutExternalAccountInfo) *OutExternalAccountInfo = NULL;
+    if (!Options || !OutExternalAccountInfo) return EOS_InvalidParameters;
+    const char *steam = NULL, *name = NULL;
+    if (Options->ExternalAccountInfoIndex != 0 || !xerum_ext_lookup(Handle, Options->TargetUserId, &steam, &name))
+        return EOS_NotFound;
+    return xerum_ext_copy(Options->TargetUserId, steam, name, OutExternalAccountInfo);
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_CopyProductUserExternalAccountByAccountType(
@@ -958,9 +998,12 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_CopyProductUserExternalAccountByAccoun
     const EOS_Connect_CopyProductUserExternalAccountByAccountTypeOptions* Options,
     EOS_Connect_ExternalAccountInfo** OutExternalAccountInfo
 ) { EOS_LOG_TRACE("ENTER");
-    EOS_LOG_API_ENTER();
-    EOS_LOG_WARN("CopyProductUserExternalAccountByAccountType not supported in LAN emulator");
-    return EOS_NotFound;
+    if (OutExternalAccountInfo) *OutExternalAccountInfo = NULL;
+    if (!Options || !OutExternalAccountInfo) return EOS_InvalidParameters;
+    const char *steam = NULL, *name = NULL;
+    if (Options->AccountIdType != EOS_EAT_STEAM || !xerum_ext_lookup(Handle, Options->TargetUserId, &steam, &name))
+        return EOS_NotFound;
+    return xerum_ext_copy(Options->TargetUserId, steam, name, OutExternalAccountInfo);
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_CopyProductUserExternalAccountByAccountId(
@@ -968,9 +1011,13 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_CopyProductUserExternalAccountByAccoun
     const EOS_Connect_CopyProductUserExternalAccountByAccountIdOptions* Options,
     EOS_Connect_ExternalAccountInfo** OutExternalAccountInfo
 ) { EOS_LOG_TRACE("ENTER");
-    EOS_LOG_API_ENTER();
-    EOS_LOG_WARN("CopyProductUserExternalAccountByAccountId not supported in LAN emulator");
-    return EOS_NotFound;
+    if (OutExternalAccountInfo) *OutExternalAccountInfo = NULL;
+    if (!Options || !OutExternalAccountInfo) return EOS_InvalidParameters;
+    const char *steam = NULL, *name = NULL;
+    if (!Options->AccountId || !xerum_ext_lookup(Handle, Options->TargetUserId, &steam, &name) ||
+        strcmp(Options->AccountId, steam) != 0)
+        return EOS_NotFound;
+    return xerum_ext_copy(Options->TargetUserId, steam, name, OutExternalAccountInfo);
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_CopyProductUserInfo(
@@ -978,9 +1025,11 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_CopyProductUserInfo(
     const EOS_Connect_CopyProductUserInfoOptions* Options,
     EOS_Connect_ExternalAccountInfo** OutExternalAccountInfo
 ) { EOS_LOG_TRACE("ENTER");
-    EOS_LOG_API_ENTER();
-    EOS_LOG_WARN("CopyProductUserInfo not supported in LAN emulator");
-    return EOS_NotFound;
+    if (OutExternalAccountInfo) *OutExternalAccountInfo = NULL;
+    if (!Options || !OutExternalAccountInfo) return EOS_InvalidParameters;
+    const char *steam = NULL, *name = NULL;
+    if (!xerum_ext_lookup(Handle, Options->TargetUserId, &steam, &name)) return EOS_NotFound;
+    return xerum_ext_copy(Options->TargetUserId, steam, name, OutExternalAccountInfo);
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Connect_CopyIdToken(
@@ -1115,8 +1164,11 @@ EOS_DECLARE_FUNC(void) EOS_ProductUserIdDetails_Release(EOS_ProductUserId UserId
 }
 
 EOS_DECLARE_FUNC(void) EOS_Connect_ExternalAccountInfo_Release(EOS_Connect_ExternalAccountInfo* ExternalAccountInfo) { EOS_LOG_TRACE("ENTER");
-    // No-op in LAN emulator as we never allocate these
-    (void)ExternalAccountInfo;
+    // xerum: allocated by xerum_ext_copy (strings + struct)
+    if (!ExternalAccountInfo) return;
+    free((void*)ExternalAccountInfo->DisplayName);
+    free((void*)ExternalAccountInfo->AccountId);
+    free(ExternalAccountInfo);
 }
 
 EOS_DECLARE_FUNC(void) EOS_Connect_IdToken_Release(EOS_Connect_IdToken* IdToken) { EOS_LOG_TRACE("ENTER");
