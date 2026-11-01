@@ -29,6 +29,8 @@
 #include <stdio.h>
 #include <time.h>
 
+bool sessions_find_user_beacon_address(SessionsState* state, const char* puid, char* out, size_t out_len);
+
 /* Handle magic numbers (must match the values documented in lobby_internal.h
  * and used by the sibling lobby modules). */
 #define LOBBY_STATE_MAGIC   0x4C4F4259  /* "LOBY" */
@@ -1332,7 +1334,21 @@ static EOS_EResult lobby_join_common(LobbyState* state, const Lobby* snapshot,
      * the lobby owner (analogous to a session join). */
     if (state->platform && state->platform->p2p && l->owner_id &&
         l->host_address[0] != '\0') {
-        p2p_register_peer_address(state->platform->p2p, l->owner_id, l->host_address);
+        /* Prefer the owner's user-beacon source IP: the announced host_address
+         * carries the owner's first adapter IP, unreachable over ZeroTier/VPN. */
+        char addr[sizeof(l->host_address)];
+        if (state->platform->sessions &&
+            sessions_find_user_beacon_address(state->platform->sessions, l->owner_id_string,
+                                              addr, sizeof(addr))) {
+            if (strcmp(addr, l->host_address) != 0) {
+                EOS_LOG_INFO("JoinLobby: owner %s announced %s, using beacon source %s",
+                             l->owner_id_string, l->host_address, addr);
+            }
+        } else {
+            strncpy(addr, l->host_address, sizeof(addr) - 1);
+            addr[sizeof(addr) - 1] = '\0';
+        }
+        p2p_register_peer_address(state->platform->p2p, l->owner_id, addr);
     }
 
     state->local_lobby_count++;

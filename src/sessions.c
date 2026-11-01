@@ -35,19 +35,6 @@ void generate_session_id(char* buffer, size_t buffer_size) {
     buffer[len] = '\0';
 }
 
-// P2P address of a discovered session's owner (ip:port from its LAN announce).
-bool sessions_find_owner_address(SessionsState* state, const char* owner_puid, char* out, size_t out_len) {
-    if (!state || !owner_puid || !owner_puid[0] || !out || out_len == 0) return false;
-    for (int i = 0; i < state->discovered_session_count; i++) {
-        const Session* s = &state->discovered_sessions[i];
-        if (s->valid && s->host_address[0] && _stricmp(s->owner_id_string, owner_puid) == 0) {
-            strncpy(out, s->host_address, out_len - 1);
-            out[out_len - 1] = '\0';
-            return true;
-        }
-    }
-    return false;
-}
 // P2P endpoint of a peer from its LAN user beacon (source ip + advertised P2P port).
 // Used when the game connects to EOS:<puid> without any EOS session (Deadzone).
 bool sessions_find_user_beacon_address(SessionsState* state, const char* puid, char* out, size_t out_len) {
@@ -59,6 +46,40 @@ bool sessions_find_user_beacon_address(SessionsState* state, const char* puid, c
         if (ub->valid && ub->p2p_port != 0 && ub->source_ip[0] && _stricmp(ub->puid, puid) == 0) {
             snprintf(out, out_len, "%s:%u", ub->source_ip, (unsigned)ub->p2p_port);
             return true;
+        }
+    }
+    return false;
+}
+
+// Reachable P2P address of a session owner. The announced host_address carries the
+// IP of the host's "first" adapter (get_local_ip), which is wrong for a peer that
+// only shares a second network with the host (ZeroTier/VPN: host advertises its
+// 192.168.178.x LAN IP, the peer only reaches 192.168.193.x). The owner's user
+// beacon carries the source IP the packet actually arrived from plus the same P2P
+// port, so prefer it and fall back to the announced address.
+static bool sessions_reachable_owner_address(SessionsState* state, const char* owner_puid,
+                                             const char* announced, char* out, size_t out_len) {
+    if (sessions_find_user_beacon_address(state, owner_puid, out, out_len)) {
+        if (announced && announced[0] && strcmp(announced, out) != 0) {
+            EOS_LOG_INFO("P2P: owner %s announced %s, using beacon source %s", owner_puid, announced, out);
+        }
+        return true;
+    }
+    if (announced && announced[0]) {
+        strncpy(out, announced, out_len - 1);
+        out[out_len - 1] = '\0';
+        return true;
+    }
+    return false;
+}
+
+// P2P address of a discovered session's owner (ip:port from its LAN announce).
+bool sessions_find_owner_address(SessionsState* state, const char* owner_puid, char* out, size_t out_len) {
+    if (!state || !owner_puid || !owner_puid[0] || !out || out_len == 0) return false;
+    for (int i = 0; i < state->discovered_session_count; i++) {
+        const Session* s = &state->discovered_sessions[i];
+        if (s->valid && s->host_address[0] && _stricmp(s->owner_id_string, owner_puid) == 0) {
+            return sessions_reachable_owner_address(state, owner_puid, s->host_address, out, out_len);
         }
     }
     return false;
@@ -788,9 +809,14 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_JoinSession(
     // connection stays "addr pending" and the NetDriverEOS handshake times out.
     if (state->platform && state->platform->p2p &&
         s->owner_id && s->host_address[0] != '\0') {
-        p2p_register_peer_address(state->platform->p2p, s->owner_id, s->host_address);
+        char addr[sizeof(s->host_address)];
+        if (!sessions_reachable_owner_address(state, s->owner_id_string, s->host_address, addr, sizeof(addr))) {
+            strncpy(addr, s->host_address, sizeof(addr) - 1);
+            addr[sizeof(addr) - 1] = '\0';
+        }
+        p2p_register_peer_address(state->platform->p2p, s->owner_id, addr);
         EOS_LOG_INFO(">>> JoinSession: registered host P2P endpoint %s for owner %s",
-                     s->host_address, s->owner_id_string);
+                     addr, s->owner_id_string);
     }
 
     state->local_session_count++;
