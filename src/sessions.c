@@ -5,6 +5,7 @@
 #include "internal/callbacks.h"
 #include "internal/lan_discovery.h"
 #include "internal/logging.h"
+#include "internal/connect_internal.h"  // xerum: local users for session invites
 #include "internal/p2p_internal.h"  // advertise/register the host's P2P endpoint
 #include "lan_common.h"
 #include <stdio.h>
@@ -93,6 +94,147 @@ Session* find_local_session_by_id(SessionsState* state, const char* id) {
     return NULL;
 }
 
+/* ===========================================================================
+ * xerum: LAN session invites (EOS_Sessions_SendInvite). Like the lobby invites
+ * (lobby.c, MSG 0x10) but on the sessions discovery port: the inviter broadcasts
+ * {invite id, session id, from, to}; the invitee stores it (QueryInvites /
+ * GetInviteCount / GetInviteIdByIndex / CopySessionHandleByInviteId) and fires
+ * SessionInviteReceived. The game shows the invite and joins via the invite id.
+ * Optional EOSLAN_AUTO_ACCEPT_SESSION_INVITES=1 also fires SessionInviteAccepted.
+ * ===========================================================================*/
+#define MSG_SESSION_INVITE 0x11
+#define MAX_SESSION_INVITES 16
+#define SESSION_INVITE_AUTO_ACCEPT_MS 1500
+
+typedef struct {
+    char invite_id[SESSION_ID_LEN + 1];
+    char session_id[SESSION_ID_LEN + 1];
+    char from[OWNER_ID_STRING_LEN];
+    char to[OWNER_ID_STRING_LEN];
+} SessionInviteWire;
+
+typedef struct {
+    SessionInviteWire w;
+    uint64_t received_at;
+    uint64_t accept_at;
+    bool valid;
+    bool accepted;
+} SessionInvite;
+
+static SessionInvite g_session_invites[MAX_SESSION_INVITES];
+
+static EOS_ProductUserId sess_local_user_by_string(SessionsState* state, const char* id) {
+    ConnectState* cs = (state && state->platform) ? state->platform->connect : NULL;
+    if (!cs || !id || !id[0]) return NULL;
+    for (int i = 0; i < MAX_LOCAL_USERS; i++) {
+        if (cs->users[i].in_use && _stricmp(cs->users[i].user_id.id_string, id) == 0) {
+            return (EOS_ProductUserId)&cs->users[i].user_id;
+        }
+    }
+    return NULL;
+}
+
+static EOS_ProductUserId sess_any_local_user(SessionsState* state) {
+    ConnectState* cs = (state && state->platform) ? state->platform->connect : NULL;
+    if (!cs) return NULL;
+    for (int i = 0; i < MAX_LOCAL_USERS; i++) {
+        if (cs->users[i].in_use) return (EOS_ProductUserId)&cs->users[i].user_id;
+    }
+    return NULL;
+}
+
+static void sess_puid_str(EOS_ProductUserId id, char* out, int out_len) {
+    int32_t len = out_len;
+    out[0] = '\0';
+    if (!id || EOS_ProductUserId_ToString(id, out, &len) != EOS_Success) out[0] = '\0';
+}
+
+static SessionInvite* sess_find_invite(const char* invite_id) {
+    if (!invite_id) return NULL;
+    for (int i = 0; i < MAX_SESSION_INVITES; i++) {
+        if (g_session_invites[i].valid && strcmp(g_session_invites[i].w.invite_id, invite_id) == 0) {
+            return &g_session_invites[i];
+        }
+    }
+    return NULL;
+}
+
+static bool sess_invite_for(const SessionInvite* inv, EOS_ProductUserId local) {
+    char me[OWNER_ID_STRING_LEN];
+    if (!local) return true;
+    sess_puid_str(local, me, (int)sizeof(me));
+    return _stricmp(inv->w.to, me) == 0;
+}
+
+static void sessions_on_discovery_raw(void* ctx, uint8_t msg_type, const uint8_t* data, int len,
+                                      const char* source_ip) {
+    SessionsState* state = (SessionsState*)ctx;
+    SessionInviteWire w;
+    if (!state || msg_type != MSG_SESSION_INVITE || len < (int)sizeof(w)) return;
+    memcpy(&w, data, sizeof(w));
+    w.invite_id[SESSION_ID_LEN] = '\0';
+    w.session_id[SESSION_ID_LEN] = '\0';
+    w.from[OWNER_ID_STRING_LEN - 1] = '\0';
+    w.to[OWNER_ID_STRING_LEN - 1] = '\0';
+
+    EOS_ProductUserId local = sess_local_user_by_string(state, w.to);
+    if (!local || sess_find_invite(w.invite_id)) return;  /* not for us / duplicate */
+
+    int slot = -1;
+    for (int i = 0; i < MAX_SESSION_INVITES; i++) {
+        if (!g_session_invites[i].valid) { slot = i; break; }
+    }
+    if (slot < 0) {
+        slot = 0;
+        for (int i = 1; i < MAX_SESSION_INVITES; i++) {
+            if (g_session_invites[i].received_at < g_session_invites[slot].received_at) slot = i;
+        }
+    }
+    SessionInvite* inv = &g_session_invites[slot];
+    memset(inv, 0, sizeof(*inv));
+    inv->w = w;
+    inv->received_at = get_time_ms();
+    {
+        const char* aa = getenv("EOSLAN_AUTO_ACCEPT_SESSION_INVITES");
+        inv->accept_at = (aa && aa[0] == '1') ? inv->received_at + SESSION_INVITE_AUTO_ACCEPT_MS : 0;
+    }
+    inv->valid = true;
+    EOS_LOG_INFO("Session invite %s received from %s (%s) for session %s", w.invite_id, w.from,
+                 source_ip ? source_ip : "?", w.session_id);
+
+    if (!state->platform || !state->platform->callbacks) return;
+    for (NotificationEntry* e = state->invite_received_notifications; e; e = e->next) {
+        EOS_Sessions_SessionInviteReceivedCallbackInfo info;
+        memset(&info, 0, sizeof(info));
+        info.ClientData = e->client_data;
+        info.LocalUserId = local;
+        info.TargetUserId = EOS_ProductUserId_FromString(inv->w.from);
+        info.InviteId = inv->w.invite_id;
+        callback_queue_push(state->platform->callbacks, e->callback, &info, sizeof(info));
+    }
+}
+
+static void sessions_process_invites(SessionsState* state) {
+    uint64_t now = get_time_ms();
+    for (int i = 0; i < MAX_SESSION_INVITES; i++) {
+        SessionInvite* inv = &g_session_invites[i];
+        if (!inv->valid || inv->accepted || !inv->accept_at || now < inv->accept_at) continue;
+        inv->accepted = true;
+        if (!state->platform || !state->platform->callbacks) continue;
+        EOS_LOG_INFO("Session invite %s auto-accepted", inv->w.invite_id);
+        for (NotificationEntry* e = state->invite_accepted_notifications; e; e = e->next) {
+            EOS_Sessions_SessionInviteAcceptedCallbackInfo info;
+            memset(&info, 0, sizeof(info));
+            info.ClientData = e->client_data;
+            info.SessionId = inv->w.session_id;
+            info.LocalUserId = sess_local_user_by_string(state, inv->w.to);
+            info.TargetUserId = EOS_ProductUserId_FromString(inv->w.from);
+            info.InviteId = inv->w.invite_id;
+            callback_queue_push(state->platform->callbacks, e->callback, &info, sizeof(info));
+        }
+    }
+}
+
 // SessionsState lifecycle
 
 SessionsState* sessions_create(PlatformState* platform) {
@@ -124,6 +266,8 @@ SessionsState* sessions_create(PlatformState* platform) {
 
     // Set broadcast address from config
     discovery_set_broadcast_addr(state->discovery, broadcast_addr);
+    // xerum: LAN session invites arrive as a custom message type on this port
+    discovery_set_raw_handler(state->discovery, sessions_on_discovery_raw, state);
 
     EOS_LOG_INFO("SessionsState created with LAN discovery: port=%u, broadcast=%s, interval=%ums",
                  port, broadcast_addr, interval);
@@ -178,6 +322,7 @@ void sessions_tick(SessionsState* state) {
 
     // Poll for incoming discovery packets (announcements from hosts, queries from clients)
     discovery_poll(state->discovery);
+    sessions_process_invites(state);  // xerum
 
     // Check if a query was received - if so, broadcast immediately
     bool should_broadcast_now = discovery_should_broadcast_now(state->discovery);
@@ -877,7 +1022,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CopyActiveSessionHandle(
     return EOS_Success;
 }
 
-// Invite stubs (not implemented for LAN)
+// Invites (xerum: real LAN invites, see MSG_SESSION_INVITE above)
 
 EOS_DECLARE_FUNC(void) EOS_Sessions_SendInvite(
     EOS_HSessions Handle,
@@ -886,14 +1031,30 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_SendInvite(
     const EOS_Sessions_OnSendInviteCallback CompletionDelegate
 ) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
-
-    EOS_LOG_INFO(">>> EOS_Sessions_SendInvite: session='%s' (pretending success)",
-                 (Options && Options->SessionName) ? Options->SessionName : "(null)");
-
     EOS_Sessions_SendInviteCallbackInfo info = {0};
-    info.ResultCode = EOS_Success;  // Pretend it worked
     info.ClientData = ClientData;
+    info.ResultCode = EOS_InvalidParameters;
 
+    if (state && state->magic == 0x53455353 && Options && Options->SessionName && Options->TargetUserId) {
+        Session* s = find_local_session_by_name(state, Options->SessionName);
+        if (!s) {
+            info.ResultCode = EOS_NotFound;
+        } else {
+            SessionInviteWire w;
+            memset(&w, 0, sizeof(w));
+            generate_session_id(w.invite_id, sizeof(w.invite_id));
+            strncpy(w.session_id, s->session_id, SESSION_ID_LEN);
+            sess_puid_str(Options->LocalUserId ? Options->LocalUserId : sess_any_local_user(state), w.from, (int)sizeof(w.from));
+            sess_puid_str(Options->TargetUserId, w.to, (int)sizeof(w.to));
+            /* UDP broadcast: twice; the invitee drops duplicates by invite id */
+            discovery_broadcast_raw(state->discovery, MSG_SESSION_INVITE, (const uint8_t*)&w, (int)sizeof(w));
+            discovery_broadcast_raw(state->discovery, MSG_SESSION_INVITE, (const uint8_t*)&w, (int)sizeof(w));
+            state->last_announce_time = 0;  /* announce the session right away */
+            EOS_LOG_INFO("Session invite %s sent: session '%s' (%s) from %s to %s", w.invite_id,
+                         Options->SessionName, w.session_id, w.from, w.to);
+            info.ResultCode = EOS_Success;
+        }
+    }
     if (CompletionDelegate && state && state->platform && state->platform->callbacks) {
         callback_queue_push(state->platform->callbacks, (void*)CompletionDelegate, &info, sizeof(info));
     }
@@ -906,11 +1067,12 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_RejectInvite(
     const EOS_Sessions_OnRejectInviteCallback CompletionDelegate
 ) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
+    SessionInvite* inv = (Options) ? sess_find_invite(Options->InviteId) : NULL;
+    if (inv) inv->valid = false;
 
     EOS_Sessions_RejectInviteCallbackInfo info = {0};
     info.ResultCode = EOS_Success;
     info.ClientData = ClientData;
-
     if (CompletionDelegate && state && state->platform && state->platform->callbacks) {
         callback_queue_push(state->platform->callbacks, (void*)CompletionDelegate, &info, sizeof(info));
     }
@@ -923,14 +1085,11 @@ EOS_DECLARE_FUNC(void) EOS_Sessions_QueryInvites(
     const EOS_Sessions_OnQueryInvitesCallback CompletionDelegate
 ) { EOS_LOG_TRACE("ENTER");
     SessionsState* state = (SessionsState*)Handle;
-
     EOS_LOG_INFO(">>> EOS_Sessions_QueryInvites CALLED");
-
     EOS_Sessions_QueryInvitesCallbackInfo info = {0};
     info.ResultCode = EOS_Success;
     info.ClientData = ClientData;
     info.LocalUserId = Options ? Options->LocalUserId : NULL;
-
     if (CompletionDelegate && state && state->platform && state->platform->callbacks) {
         callback_queue_push(state->platform->callbacks, (void*)CompletionDelegate, &info, sizeof(info));
     }
@@ -941,9 +1100,12 @@ EOS_DECLARE_FUNC(uint32_t) EOS_Sessions_GetInviteCount(
     const EOS_Sessions_GetInviteCountOptions* Options
 ) { EOS_LOG_TRACE("ENTER");
     (void)Handle;
-    (void)Options;
-    EOS_LOG_INFO(">>> EOS_Sessions_GetInviteCount -> 0 (no invites in LAN mode)");
-    return 0;  // No invites in LAN mode
+    uint32_t n = 0;
+    for (int i = 0; i < MAX_SESSION_INVITES; i++) {
+        if (g_session_invites[i].valid && sess_invite_for(&g_session_invites[i], Options ? Options->LocalUserId : NULL)) n++;
+    }
+    EOS_LOG_INFO(">>> EOS_Sessions_GetInviteCount -> %u", n);
+    return n;
 }
 
 EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_GetInviteIdByIndex(
@@ -953,13 +1115,21 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_GetInviteIdByIndex(
     int32_t* InOutBufferLength
 ) { EOS_LOG_TRACE("ENTER");
     (void)Handle;
-    (void)Options;
-    (void)OutBuffer;
-    (void)InOutBufferLength;
-    EOS_LOG_WARN(">>> EOS_Sessions_GetInviteIdByIndex -> NotFound (unimplemented)");
+    if (!Options || !OutBuffer || !InOutBufferLength) return EOS_InvalidParameters;
+    uint32_t k = 0;
+    for (int i = 0; i < MAX_SESSION_INVITES; i++) {
+        SessionInvite* inv = &g_session_invites[i];
+        if (!inv->valid || !sess_invite_for(inv, Options->LocalUserId)) continue;
+        if (k++ != Options->Index) continue;
+        int32_t need = (int32_t)strlen(inv->w.invite_id) + 1;
+        if (*InOutBufferLength < need) { *InOutBufferLength = need; return EOS_LimitExceeded; }
+        memcpy(OutBuffer, inv->w.invite_id, (size_t)need);
+        *InOutBufferLength = need;
+        EOS_LOG_INFO(">>> EOS_Sessions_GetInviteIdByIndex(%u) -> %s", Options->Index, inv->w.invite_id);
+        return EOS_Success;
+    }
     return EOS_NotFound;
 }
-
 // Resolve a discovered (or local) session into a details handle, by session id.
 // Shared by CopySessionHandleByInviteId/ByUiEventId-style resolution paths.
 static EOS_EResult copy_details_by_session_id(SessionsState* state, const char* session_id, EOS_HSessionDetails* OutSessionHandle) {
@@ -1000,7 +1170,8 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_Sessions_CopySessionHandleByInviteId(
     const char* invite_id = (Options) ? Options->InviteId : NULL;
     // LAN mode has no real invites; if the game passes a session id here
     // (some flows reuse the join-info payload), resolve it as one.
-    EOS_EResult r = copy_details_by_session_id(state, invite_id, OutSessionHandle);
+    SessionInvite* inv = sess_find_invite(invite_id);  // xerum: real LAN invite -> its session
+    EOS_EResult r = copy_details_by_session_id(state, inv ? inv->w.session_id : invite_id, OutSessionHandle);
     EOS_LOG_INFO(">>> EOS_Sessions_CopySessionHandleByInviteId: invite_id='%s' -> %d",
                  invite_id ? invite_id : "(null)", (int)r);
     return r;
