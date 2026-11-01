@@ -507,6 +507,36 @@ EOS_ProductUserId social_bridge_resolve_puid_by_steam(PlatformState* p, const ch
     return NULL;
 }
 
+// xerum: ProductUserId string -> Steam ID (+ display name). Used by the Connect
+// external-account queries (EOS_Connect_CopyProductUserExternalAccountBy*): MW5's
+// crossplay layer reads the linked Steam account of every PUID (itself after login,
+// then each contact). Local user: EOSLAN_STEAM_ID / EOSLAN_USERNAME; peers: beacon.
+int social_bridge_resolve_steam_by_puid(PlatformState* p, const char* puid,
+                                        const char** out_steam, const char** out_name) {
+    if (!p || !puid || !puid[0]) return 0;
+    const char* self = local_product_id_string(p);
+    if (self && strncmp(puid, self, PRODUCT_USER_ID_LENGTH) == 0) {
+        const char* s = local_steam_id_string();
+        if (!s) return 0;
+        if (out_steam) *out_steam = s;
+        if (out_name) {
+            const char* n = getenv("EOSLAN_USERNAME");
+            *out_name = (n && n[0]) ? n : "";
+        }
+        return 1;
+    }
+    refresh_peers(p);
+    for (int i = 0; i < g_peer_count; i++) {
+        if (g_peers[i].valid && g_peers[i].puid[0] && g_peers[i].steam_id[0] &&
+            strncmp(g_peers[i].puid, puid, PRODUCT_USER_ID_LENGTH) == 0) {
+            if (out_steam) *out_steam = g_peers[i].steam_id;
+            if (out_name) *out_name = g_peers[i].display_name;
+            return 1;
+        }
+    }
+    return 0;
+}
+
 // Reverse mapping: ProductUserId string -> EpicAccountId string. The game calls
 // EOS_Connect_GetProductUserIdMapping on a session OWNER's puid to rebuild that
 // user's Epic identity during a join; without this it can't form the host user
