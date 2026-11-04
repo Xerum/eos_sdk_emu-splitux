@@ -321,6 +321,32 @@ EOS_DECLARE_FUNC(void) EOS_LobbySearch_Find(
                      (int)search->params[p].comparison);
     }
 
+    // Targeted searches also find own lobbies, like real EOS (announcements of own lobbies
+    // never reach discovered_lobbies). Dying Light: The Beast looks up the lobby it just
+    // created by id and destroys it again if the search returns nothing.
+    if (search->target_lobby_id[0] != '\0' || search->target_user_id != NULL) {
+        for (int i = 0; i < state->local_lobby_count && search->result_count < (int)search->max_results; i++) {
+            Lobby* l = &state->local_lobbies[i];
+            if (!l->valid) {
+                continue;
+            }
+            if (search->target_lobby_id[0] != '\0' && strcmp(l->lobby_id, search->target_lobby_id) != 0) {
+                continue;
+            }
+            if (search->target_user_id != NULL) {
+                bool user_found = (l->owner_id != NULL && l->owner_id == search->target_user_id);
+                for (int j = 0; !user_found && j < l->member_count; j++) {
+                    user_found = l->members[j].valid && l->members[j].member_id == search->target_user_id;
+                }
+                if (!user_found) {
+                    continue;
+                }
+            }
+            EOS_LOG_INFO("LobbySearch_Find:   own lobby '%s' matches targeted search", l->lobby_id);
+            search->results[search->result_count++] = *l;
+        }
+    }
+
     // Filter discovered lobbies
     for (int i = 0; i < state->discovered_lobby_count && search->result_count < (int)search->max_results; i++) {
         Lobby* l = &state->discovered_lobbies[i];
