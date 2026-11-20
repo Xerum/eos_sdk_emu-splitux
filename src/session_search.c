@@ -44,7 +44,7 @@ static bool session_matches_param(const Session* session, const SearchParameter*
     // Find attribute in session
     const SessionAttribute* attr = NULL;
     for (int i = 0; i < session->attribute_count; i++) {
-        if (strcmp(session->attributes[i].key, param->key) == 0) {
+        if (_stricmp(session->attributes[i].key, param->key) == 0) {
             attr = &session->attributes[i];
             break;
         }

@@ -19,7 +19,7 @@ static bool lobby_matches_param(const Lobby* lobby, const LobbySearchParameter* 
     // Find attribute in lobby
     const LobbyAttribute* attr = NULL;
     for (int i = 0; i < lobby->attribute_count; i++) {
-        if (strcmp(lobby->attributes[i].key, param->key) == 0) {
+        if (_stricmp(lobby->attributes[i].key, param->key) == 0) {
             attr = &lobby->attributes[i];
             break;
         }

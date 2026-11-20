@@ -1103,7 +1103,7 @@ static void lobby_sync_local_presence(const Lobby* l) {
     for (int k = 0; k < priority_count && n < MAX_PRESENCE_RECORDS; k++) {
         for (int i = 0; i < l->attribute_count; i++) {
             if (used[i]) continue;
-            if (strncmp(l->attributes[i].key, priority[k], MAX_LOBBY_ATTRIBUTE_KEY_LEN) != 0) continue;
+            if (_strnicmp(l->attributes[i].key, priority[k], MAX_LOBBY_ATTRIBUTE_KEY_LEN) != 0) continue;
             lobby_attr_to_record(&l->attributes[i], &recs[n++]);
             used[i] = true;
             break;

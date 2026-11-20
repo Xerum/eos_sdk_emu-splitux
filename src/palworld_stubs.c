@@ -124,34 +124,34 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_EpicAccountId_IsValid(EOS_EpicAccountId Id) { EOS
     extern AuthState g_auth_state;
 
     // Log all the details to understand what the game is passing
-    EOS_LOG_INFO(">>> EpicAccountId_IsValid(%p) called", (void*)Id);
-    EOS_LOG_INFO("    logged_in=%d, our_account_ptr=%p, our_account_id=%s",
+    EOS_LOG_TRACE(">>> EpicAccountId_IsValid(%p) called", (void*)Id);
+    EOS_LOG_TRACE("    logged_in=%d, our_account_ptr=%p, our_account_id=%s",
                  g_auth_state.logged_in,
                  (void*)&g_auth_state.account_id,
                  g_auth_state.account_id.id_string);
 
     if (Id == NULL) {
-        EOS_LOG_INFO("    -> Result: FALSE (NULL pointer)");
+        EOS_LOG_TRACE("    -> Result: FALSE (NULL pointer)");
         return EOS_FALSE;
     }
 
     // Try to examine what the game passed us
     EOS_EpicAccountIdDetails* details = (EOS_EpicAccountIdDetails*)Id;
-    EOS_LOG_INFO("    passed magic=0x%08X (expected 0x%08X)", details->magic, EAID_MAGIC);
+    EOS_LOG_TRACE("    passed magic=0x%08X (expected 0x%08X)", details->magic, EAID_MAGIC);
 
     if (details->magic == EAID_MAGIC) {
-        EOS_LOG_INFO("    passed id_string=%s", details->id_string);
+        EOS_LOG_TRACE("    passed id_string=%s", details->id_string);
     } else {
         // Try to dump first 16 bytes as hex in case it's a different format
         unsigned char* bytes = (unsigned char*)Id;
-        EOS_LOG_INFO("    raw bytes: %02X %02X %02X %02X %02X %02X %02X %02X",
+        EOS_LOG_TRACE("    raw bytes: %02X %02X %02X %02X %02X %02X %02X %02X",
                      bytes[0], bytes[1], bytes[2], bytes[3],
                      bytes[4], bytes[5], bytes[6], bytes[7]);
     }
 
     // Check if this is OUR account ID (pointer comparison)
     if (Id == (EOS_EpicAccountId)&g_auth_state.account_id) {
-        EOS_LOG_INFO("    -> Result: TRUE (matches our account_id pointer)");
+        EOS_LOG_TRACE("    -> Result: TRUE (matches our account_id pointer)");
         return EOS_TRUE;
     }
 
@@ -159,15 +159,15 @@ EOS_DECLARE_FUNC(EOS_Bool) EOS_EpicAccountId_IsValid(EOS_EpicAccountId Id) { EOS
     // made every friend invalid with EOSLAN_EXTERNAL_AUTH=fail and Remnant II crashed
     // on it. Only our own id follows our login state.
     if (details->magic == EAID_MAGIC && Id != (EOS_EpicAccountId)&g_auth_state.account_id) {
-        EOS_LOG_INFO("    -> Result: TRUE (valid magic, remote id)");
+        EOS_LOG_TRACE("    -> Result: TRUE (valid magic, remote id)");
         return EOS_TRUE;
     }
     if (details->magic == EAID_MAGIC && g_auth_state.logged_in) {
-        EOS_LOG_INFO("    -> Result: TRUE (valid magic, logged in)");
+        EOS_LOG_TRACE("    -> Result: TRUE (valid magic, logged in)");
         return EOS_TRUE;
     }
 
-    EOS_LOG_INFO("    -> Result: FALSE (magic mismatch or not logged in)");
+    EOS_LOG_TRACE("    -> Result: FALSE (magic mismatch or not logged in)");
     return EOS_FALSE;
 }
 EOS_DECLARE_FUNC(EOS_EResult) EOS_EpicAccountId_ToString(EOS_EpicAccountId Id, char* OutBuffer, int32_t* InOutBufferLength) { EOS_LOG_TRACE("ENTER");
@@ -198,7 +198,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_EpicAccountId_ToString(EOS_EpicAccountId Id, c
     }
     strcpy(OutBuffer, src);
     *InOutBufferLength = required;
-    EOS_LOG_INFO("EpicAccountId_ToString(Id=%p) -> %s", (void*)Id, OutBuffer);
+    EOS_LOG_TRACE("EpicAccountId_ToString(Id=%p) -> %s", (void*)Id, OutBuffer);
     return EOS_Success;
 }
 

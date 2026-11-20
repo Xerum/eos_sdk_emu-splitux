@@ -233,7 +233,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyAttributeByKey(
     }
 
     for (int i = 0; i < details->lobby.attribute_count; i++) {
-        if (strcmp(details->lobby.attributes[i].key, Options->AttrKey) == 0) {
+        if (_stricmp(details->lobby.attributes[i].key, Options->AttrKey) == 0) {
             return lobby_attribute_to_eos(&details->lobby.attributes[i], OutAttribute);
         }
     }
@@ -360,7 +360,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyDetails_CopyMemberAttributeByKey(
     }
 
     for (int i = 0; i < member->attribute_count; i++) {
-        if (strcmp(member->attributes[i].key, Options->AttrKey) == 0) {
+        if (_stricmp(member->attributes[i].key, Options->AttrKey) == 0) {
             return lobby_attribute_to_eos(&member->attributes[i], OutAttribute);
         }
     }

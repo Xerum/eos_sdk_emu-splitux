@@ -186,7 +186,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_AddAttribute(
     // Check if attribute already exists and update it
     int existing_index = -1;
     for (int i = 0; i < mod->session.attribute_count; i++) {
-        if (strcmp(mod->session.attributes[i].key, attr_data->Key) == 0) {
+        if (_stricmp(mod->session.attributes[i].key, attr_data->Key) == 0) {
             existing_index = i;
             break;
         }
@@ -255,7 +255,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionModification_RemoveAttribute(
 
     // Find and remove attribute
     for (int i = 0; i < mod->session.attribute_count; i++) {
-        if (strcmp(mod->session.attributes[i].key, Options->Key) == 0) {
+        if (_stricmp(mod->session.attributes[i].key, Options->Key) == 0) {
             // Shift remaining attributes down
             memmove(&mod->session.attributes[i],
                     &mod->session.attributes[i + 1],

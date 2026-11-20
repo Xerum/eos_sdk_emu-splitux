@@ -279,7 +279,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_SessionDetails_CopySessionAttributeByKey(
     uint32_t visible_index = 0;
     for (int i = 0; i < details->session.attribute_count; i++) {
         if (attr_hidden(&details->session.attributes[i])) continue;
-        if (strcmp(details->session.attributes[i].key, Options->AttrKey) != 0) {
+        if (_stricmp(details->session.attributes[i].key, Options->AttrKey) != 0) {
             visible_index++;
         } else {
             EOS_SessionDetails_CopySessionAttributeByIndexOptions index_opts = {

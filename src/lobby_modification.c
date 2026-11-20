@@ -157,14 +157,15 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_AddAttribute(
     }
 
     const EOS_Lobby_AttributeData* attr_data = Options->Attribute;
-    EOS_LOG_INFO("LobbyModification_AddAttribute: key='%s' type=%d apiver=%d (expected %d)",
-                 attr_data->Key, (int)attr_data->ValueType, (int)Options->ApiVersion,
-                 (int)EOS_LOBBYMODIFICATION_ADDATTRIBUTE_API_LATEST);
+    EOS_LOG_INFO("LobbyModification_AddAttribute: key='%s' type=%d value='%s' apiver=%d (expected %d)",
+                 attr_data->Key, (int)attr_data->ValueType,
+                 (attr_data->ValueType == EOS_AT_STRING && attr_data->Value.AsUtf8) ? attr_data->Value.AsUtf8 : "",
+                 (int)Options->ApiVersion, (int)EOS_LOBBYMODIFICATION_ADDATTRIBUTE_API_LATEST);
 
     // Check if attribute already exists and update it
     int existing_index = -1;
     for (int i = 0; i < mod->staged.attribute_count; i++) {
-        if (strcmp(mod->staged.attributes[i].key, attr_data->Key) == 0) {
+        if (_stricmp(mod->staged.attributes[i].key, attr_data->Key) == 0) {
             existing_index = i;
             break;
         }
@@ -205,7 +206,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_RemoveAttribute(
 
     // Find and remove attribute
     for (int i = 0; i < mod->staged.attribute_count; i++) {
-        if (strcmp(mod->staged.attributes[i].key, Options->Key) == 0) {
+        if (_stricmp(mod->staged.attributes[i].key, Options->Key) == 0) {
             // Shift remaining attributes down
             memmove(&mod->staged.attributes[i],
                     &mod->staged.attributes[i + 1],
@@ -241,7 +242,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_AddMemberAttribute(
     // Check if member attribute already exists and update it
     int existing_index = -1;
     for (int i = 0; i < mod->member_attribute_count; i++) {
-        if (strcmp(mod->member_attributes[i].key, attr_data->Key) == 0) {
+        if (_stricmp(mod->member_attributes[i].key, attr_data->Key) == 0) {
             existing_index = i;
             break;
         }
@@ -282,7 +283,7 @@ EOS_DECLARE_FUNC(EOS_EResult) EOS_LobbyModification_RemoveMemberAttribute(
 
     // Find and remove member attribute
     for (int i = 0; i < mod->member_attribute_count; i++) {
-        if (strcmp(mod->member_attributes[i].key, Options->Key) == 0) {
+        if (_stricmp(mod->member_attributes[i].key, Options->Key) == 0) {
             // Shift remaining member attributes down
             memmove(&mod->member_attributes[i],
                     &mod->member_attributes[i + 1],
