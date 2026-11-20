@@ -879,7 +879,12 @@ EOS_DECLARE_FUNC(void) EOS_Connect_QueryExternalAccountMappings(
         info.ClientData = ClientData;
         info.LocalUserId = Options ? Options->LocalUserId : NULL;
         EOS_LOG_INFO(">>> QueryExternalAccountMappings returning Success");
-        CompletionDelegate(&info);
+        // Deliver on the next EOS_Platform_Tick like real EOS (see QueryProductUserIdMappings).
+        ConnectState* state = (ConnectState*)Handle;
+        if (state && state->platform && state->platform->callbacks)
+            callback_queue_push(state->platform->callbacks, (void*)CompletionDelegate, &info, sizeof(info));
+        else
+            CompletionDelegate(&info);
     }
 }
 
@@ -897,7 +902,16 @@ EOS_DECLARE_FUNC(void) EOS_Connect_QueryProductUserIdMappings(
         info.ClientData = ClientData;
         info.LocalUserId = Options ? Options->LocalUserId : NULL;
         EOS_LOG_INFO(">>> QueryProductUserIdMappings returning Success");
-        CompletionDelegate(&info);
+        // Deliver on the next EOS_Platform_Tick. Epic's sample FUsers::QueryAccountMappings
+        // (used by Goat Simulator 3's FLobbiesManager) calls this and only AFTERWARDS adds
+        // the ids to its "currently queried" set; a synchronous callback finds that set
+        // empty, never calls GetProductUserIdMapping, and the ids stay pending forever
+        // (lobby owner's EpicAccountId never resolves -> black screen after hosting).
+        ConnectState* state = (ConnectState*)Handle;
+        if (state && state->platform && state->platform->callbacks)
+            callback_queue_push(state->platform->callbacks, (void*)CompletionDelegate, &info, sizeof(info));
+        else
+            CompletionDelegate(&info);
     }
 }
 
